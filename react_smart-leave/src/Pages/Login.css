@@ -1,6 +1,6 @@
 /* FOR LOGO */
 .fixed-logo {
-  max-width: 200px;  /* Set a max width for the logo */
+  max-width: 500px;  /* Set a max width for the logo */
   width: 100%;       /* Ensure the logo scales with its container */
   height: auto;      /* Maintain aspect ratio */
   margin-right: 20px; /* Add space between the logo and the text */
@@ -12,7 +12,6 @@
   font-weight: bold;
   font-family: 'Roboto', sans-serif; /* Font choice */
   opacity: 0; /* Start with invisible text */
-  white-space: nowrap;  /* Prevent text from wrapping to the next line */
   animation: fadeInGrow 3s ease forwards; /* Animation duration and easing */
 }
 
@@ -32,14 +31,21 @@
 @media (max-width: 768px) {
   .large-text {
     font-size: 4rem; /* Reduce font size for tablets */
+  
   }
+
 }
+
 
 /* Media query for mobile phones (screens smaller than 576px) */
 @media (max-width: 576px) {
   .large-text {
     font-size: 1.5rem; /* Smaller font size for mobiles */
   }
+
+  /* .................................................................. */
+
+
 
   /* Reduce logo size for smaller screens */
   .fixed-logo {
@@ -125,13 +131,13 @@
 
 /* For large screens */
 .big-text {
-  font-size: 5rem; /* Large font size for desktop */
+  font-size: 3.5rem; /* Large font size for desktop */
   font-weight: bold;
   font-family: 'Roboto', sans-serif;
 }
 
 .small-text {
-  font-size: 3rem; /* Adjusted smaller size for desktop */
+  font-size: 2.5rem; /* Adjusted smaller size for desktop */
   font-weight: bold;
   font-family: 'Roboto', sans-serif;
 }
@@ -201,22 +207,185 @@
   color: white; /* Change text color to white for contrast */
 }
 .row1 {
-  max-height: 39px; /* Set the desired width for row1 */
+  
   margin: 0 auto; /* Center the row if needed */
   padding: 0px; /* Adjust padding to reduce height */
   justify-content: center; /* Center items horizontally */
   align-items: center; /* Center items vertically */
 }
 
-.row1 {
-  margin: 0; /* Remove any margin */
-  padding: 0; /* Remove padding from the row */
-}
+
 
 .p-3.mb-2.bg-black.text-white {
   padding: 0; /* Remove all padding */
   margin: 0;  /* Remove all margin */
-  display: flex;
   align-items: center;
   justify-content: space-between; /* Ensure the content is spaced properly */
 }
+
+.button-container {
+  display: flex;
+  justify-content: center; /* Centers buttons horizontally */
+  align-items: center;     /* Centers items vertically */
+     
+  
+
+}
+.small-button {
+  padding: 5px 10px;      /* Adjust padding to reduce button size */
+  font-size: 0.8rem;      /* Reduce font size */
+}
+/* General button styles */
+.main-button {
+  padding: 3px 10px;
+  font-size: 16px;
+  background-color: #4CAF50; /* Initial green color */
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.8s ease, background-color 0.3s ease; /* Smooth grow effect and color change */
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); /* Glow effect */
+  animation: twinkle 1.5s infinite; /* Twinkle animation */
+}
+
+/* Hover effect */
+.main-button:hover {
+  transform: scale(1.1); /* Grows the button by 10% */
+  animation: none; /* Stop twinkling when hovered */
+  background-color: hwb(57 0% 0%); /* Green on hover */
+  box-shadow: 0 0 50px rgb(55, 255, 0); /* Strong glow on hover */
+  color: rgb(17, 16, 16);
+}
+
+/* Active (clicked) state */
+.main-button:active {
+  background-color: rgb(204, 198, 24); /* Red color when clicked */
+  color: rgb(0, 0, 0); /* Text color changes to black */
+  box-shadow: none; /* Remove glow when clicked */
+}
+
+/* Twinkle animation keyframes */
+@keyframes twinkle {
+  0% {
+    opacity: 20;
+    box-shadow: 0 0 20px rgba(0, 255, 51, 0.5);
+    background-color: #de1616; /* Another color during twinkle */
+    color: white;
+    font-family:Arial, Helvetica, sans-serif;
+    font-weight: 10 rem;
+    font-size: small;
+  }
+  50% {
+    background-color: #389457; /* Another color during twinkle */
+    opacity: 10;
+    box-shadow: 0 0 30px rgb(221, 18, 18);
+    color: white;
+    font-family:Arial, Helvetica, sans-serif;
+    font-weight: 10 rem;
+    font-size:small;
+  }
+  100% {
+    opacity: 10;
+    box-shadow: 0 0 20px rgba(208, 245, 3, 0.5);
+    background-color: #de1616; /* Another color during twinkle */
+    color: white;
+    font-family:Arial, Helvetica, sans-serif;
+    font-weight: 10 rem;
+    font-size: small;
+  
+  }
+}
+
+
+/* ................For Form............ */
+
+.form-outline .form-control {
+  background-color: rgba(87, 100, 90, 0.5); /* bg-success with opacity 25% */
+  padding: 0.5rem; /* p-2 equivalent */
+  color: white; /* text-white */
+  border-radius: 5px; /* Optional: to smooth the edges */
+}
+
+.form-outline .form-label {
+  color: rgb(31, 112, 55); /* Ensure the label text remains white */
+}
+
+
+.form-outline .form-control:focus {
+  border-color: rgba(40, 167, 69, 0.75); /* Change this to your desired border color */
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.75); /* Optional: add a shadow effect */
+}
+
+
+/* Change color of the tabs */
+.nav-pills .nav-link {
+  color: black; /* Inactive tabs color */
+  background-color: transparent; /* Ensure no background color */
+}
+
+.nav-pills .nav-link.active {
+  color: white; /* Active tab text color */
+  background-color: rgba(40, 167, 69, 0.75); /* Active tab background color */
+  border-radius: 0.25rem; /* Optional: Add a small border-radius for better look */
+}
+
+
+/* Make the login and register buttons very small */
+.small-btn {
+  font-size: 14px;          /* Small font size */
+  padding: 2px 5px;        /* Decrease padding to make buttons smaller */
+  width: auto;              /* Set width to auto to fit content */
+  min-width: 60px;          /* Set a minimum width if necessary */
+  text-align: center;       /* Center text inside the button */
+}
+
+/* Optional: Customize active button size and appearance */
+.nav-link.active {
+  font-size: 14px;
+  padding: 2px 5px;        /* Same small padding */
+  width: auto;              /* Set width to auto for active button */
+  min-width: 60px;          /* Maintain minimum width for consistency */
+}
+
+
+
+/* Style for checkbox tick mark */
+.custom-checkbox:checked {
+  background-color: rgba(40, 167, 69, 0.5);
+  border-color: rgba(40, 167, 69, 0.5);
+}
+
+/* Style for "Forgot password?" link */
+.forgot-password-link {
+  color: rgba(40, 167, 69, 0.5);
+  text-decoration: none;
+}
+
+/* Optional: Change color when hovering over the "Forgot password?" link */
+.forgot-password-link:hover {
+  color: rgba(40, 167, 69, 0.8);
+}
+
+/* Style for the Register link */
+.register-link {
+  color: rgba(40, 167, 69, 0.5); /* Change to your desired color */
+  text-decoration: none;          /* Remove underline */
+}
+
+/* Optional: Change color on hover */
+.register-link:hover {
+  color: rgba(40, 167, 69, 0.8); /* Darker shade on hover */
+  text-decoration: underline;     /* Underline on hover (optional) */
+}
+
+.btn-floating{
+
+  color: #299532; /* Google color */
+  transition: color 0.3s ease; /* Smooth transition for color change */
+}
+
+.btn-floating:hover {
+  color: #e81616; /* Color on hover (lighter shade) */
+}
+
