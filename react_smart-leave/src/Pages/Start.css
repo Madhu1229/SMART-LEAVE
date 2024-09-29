@@ -1,0 +1,437 @@
+/* FOR LOGO */
+.fixed-logo {
+    max-width: 500px;  /* Set a max width for the logo */
+    width: 100%;       /* Ensure the logo scales with its container */
+    height: auto;      /* Maintain aspect ratio */
+    margin-right: 20px; /* Add space between the logo and the text */
+  }
+  
+  /* FOR WORDS IN THE NAV BAR */
+  .large-text {
+    font-size: 5rem; /* Large size */
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif; /* Font choice */
+    opacity: 0; /* Start with invisible text */
+    animation: fadeInGrow 3s ease forwards; /* Animation duration and easing */
+  }
+  
+  /* Animation keyframes for fading in and growing */
+  @keyframes fadeInGrow {
+    0% {
+      opacity: 0;
+      transform: scale(0.5); /* Start small */
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1); /* Full size */
+    }
+  }
+  
+  /* Media query for tablets (screens smaller than 768px) */
+  @media (max-width: 768px) {
+    .large-text {
+      font-size: 4rem; /* Reduce font size for tablets */
+    
+    }
+  
+  }
+  
+  
+  /* Media query for mobile phones (screens smaller than 576px) */
+  @media (max-width: 576px) {
+    .large-text {
+      font-size: 1.5rem; /* Smaller font size for mobiles */
+    }
+  
+    /* .................................................................. */
+  
+  
+  
+    /* Reduce logo size for smaller screens */
+    .fixed-logo {
+      max-width: 100px; /* Smaller logo on mobile */
+    }
+  }
+  
+  
+  
+  
+  
+  /* .......................................................................................................... */
+  
+  /* FOR CAROUESEL-IMG */
+  
+  .carousel-item img {
+      width: 100%; /* Full width */
+      height: 680px; /* Fixed height */
+      object-fit: cover; /* Ensure images cover the area */
+    }
+    
+    .zoom {
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .zoom img {
+      transition: transform 5s ease; /* Slow zoom-in (5 seconds) */
+      animation: zoomIn 5s forwards; /* Initial zoom-in animation */
+    }
+    
+    @keyframes zoomIn {
+      from {
+        transform: scale(1); /* Start at normal size */
+      }
+      to {
+        transform: scale(1.1); /* Zoom in slightly */
+      }
+    }
+    
+    /* Ensuring the image doesn't move on hover */
+    .zoom:hover img {
+      transform: scale(1.1); /* Zoom effect on hover */
+    }
+  
+    
+    .zoom img {
+      filter: brightness(40%); /* Reduce brightness to darken the image */
+      transition: filter 0.3s ease; /* Smooth transition for hover effect */
+    }
+  
+  /* ............................................................................................................................. */
+    
+  
+  /* FOR Video'  */
+  
+  
+  
+  .mainVideo{
+    filter: brightness(70%); /* Reduce brightness to darken the image */
+    
+  }
+    
+  
+  
+  /* For large screens */
+  .big-text {
+    font-size: 3.5rem; /* Large font size for desktop */
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  .small-text {
+    font-size: 2.5rem; /* Adjusted smaller size for desktop */
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  /* For tablet screens */
+  @media (max-width: 768px) {
+    .big-text {
+      font-size: 4rem; /* Adjust size for tablets */
+    }
+  
+    .small-text {
+      font-size: 2rem; /* Adjust size for tablets */
+    }
+  }
+  
+  /* For mobile devices */
+  @media (max-width: 576px) {
+    .big-text {
+      font-size: 2rem; /* Further reduce size for mobile */
+    }
+  
+    .small-text {
+      font-size: 1rem; /* Further reduce size for mobile */
+    }
+  }
+  
+   /* ........................................................................................................ */
+  
+   /* FOR FIRST ROW */
+   .contact-info {
+    align-items: center; /* Vertically center the items */
+    overflow: hidden; /* Optional: hide overflow if content exceeds width */
+    justify-content: flex-start; /* Align items to the left */
+   
+  }
+  
+  .icon-container {
+    display: flex; /* Use flexbox for icon alignment */
+    align-items: center; /* Center Icon2 vertically */
+    margin-left: auto; /* Push Icon2 to the far right */
+    width: 50px; /* Adjust this value for Icon1 and email */
+    height: 100%; /* Match height to width for a square image */
+  }
+  
+  .icon {
+    width: 1.3em; /* Adjust this value for Icon1 and email */
+    height: 1.3em; /* Match height to width for a square image */
+    margin-right: 2px; /* Space between icons and email */
+  }
+  
+  .icon2 {
+    width: 2.5em; /* Adjust this value for Icon1 and email */
+    height: 1.5em; /* Match height to width for a square image */
+    margin-right: 10px; /* Space between icons and email */
+    align-items: center;
+  }
+  
+  .icon-container .icon {
+    width: 2em; /* Increase size for Icon2 */
+    height: 2em; /* Match height to width for a square image */
+    
+  }
+  
+  
+  .email {
+    font-size: 0.9em; /* Adjust font size as needed */
+    margin: 0; /* Ensure no margin on the text */
+    color: white; /* Change text color to white for contrast */
+  }
+  .row1 {
+    
+    margin: 0 auto; /* Center the row if needed */
+    padding: 0; /* Adjust padding to reduce height */
+    justify-content: center; /* Center items horizontally */
+    align-items: center; /* Center items vertically */
+  }
+  .row{
+
+    padding: 0;
+    margin: 0;
+  }
+  
+  
+  .p-3.mb-2.bg-black.text-white {
+    padding: 0; /* Remove all padding */
+    margin: 0;  /* Remove all margin */
+    align-items: center;
+    justify-content: space-between; /* Ensure the content is spaced properly */
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    align-items: center;     /* Centers items vertically */
+       
+    
+  
+  }
+  .small-button {
+    padding: 5px 10px;      /* Adjust padding to reduce button size */
+    font-size: 0.8rem;      /* Reduce font size */
+  }
+  /* General button styles */
+  .main-button {
+    padding: 3px 10px;
+    font-size: 16px;
+    background-color: #4CAF50; /* Initial green color */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.8s ease, background-color 0.3s ease; /* Smooth grow effect and color change */
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); /* Glow effect */
+    animation: twinkle 1.5s infinite; /* Twinkle animation */
+  }
+  
+  /* Hover effect */
+  .main-button:hover {
+    transform: scale(1.1); /* Grows the button by 10% */
+    animation: none; /* Stop twinkling when hovered */
+    background-color: hwb(57 0% 0%); /* Green on hover */
+    box-shadow: 0 0 50px rgb(55, 255, 0); /* Strong glow on hover */
+    color: rgb(17, 16, 16);
+  }
+  
+  /* Active (clicked) state */
+  .main-button:active {
+    background-color: rgb(204, 198, 24); /* Red color when clicked */
+    color: rgb(0, 0, 0); /* Text color changes to black */
+    box-shadow: none; /* Remove glow when clicked */
+  }
+  
+  /* Twinkle animation keyframes */
+  @keyframes twinkle {
+    0% {
+      opacity: 20;
+      box-shadow: 0 0 20px rgba(0, 255, 51, 0.5);
+      background-color: red; /* Another color during twinkle */
+      color: white;
+      font-family:Arial, Helvetica, sans-serif;
+      font-weight: 10 rem;
+      font-size: small;
+    }
+    50% {
+      background-color: #389457; /* Another color during twinkle */
+      opacity: 10;
+      box-shadow: 0 0 30px rgb(221, 18, 18);
+      color: white;
+      font-family:Arial, Helvetica, sans-serif;
+      font-weight: 10 rem;
+      font-size:small;
+    }
+    100% {
+      opacity: 10;
+      box-shadow: 0 0 20px rgba(208, 245, 3, 0.5);
+      background-color: #de1616; /* Another color during twinkle */
+      color: white;
+      font-family:Arial, Helvetica, sans-serif;
+      font-weight: 10 rem;
+      font-size: small;
+    
+    }
+  }
+  
+
+  /* ................................................................................................... */
+  .row {
+  
+    padding: 0;
+    margin-bottom: 0 !important; /* Removes margin-bottom */
+  }
+  
+  .footer{
+    padding: 0;
+    margin: 0;
+  }
+  
+  
+  /* ................................................................................................... */
+  
+
+  .decorative-line {
+    position: relative;
+    width: 650px; /* Adjust width as needed */
+    margin: 20px auto; /* Center the line horizontally with some vertical spacing */
+  }
+  
+  .decorative-line hr {
+    width: 100%; /* Full width */
+    border: none; /* Remove default border */
+    border-top: 5px solid #28a745; /* Color and thickness of the line */
+    border-radius: 0; /* Rounded edges */
+    margin: 0; /* Remove default margin */
+  }
+  
+  .decorative-line .circle {
+    position: absolute; /* Position circle absolutely within the parent */
+    top: -10px; /* Position above the line */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust for the width of the circle */
+    width: 20px; /* Circle size */
+    height: 20px; /* Circle size */
+    background-color: rgba(40, 167, 69, 1.0); /* Circle color */
+    border-radius: 50%; /* Make it circular */
+    border: 5px solid rgb(239, 230, 230);
+  }
+  
+  /* ..............For scroll down arrow............ */
+  .scroll-arrow {
+    position: fixed;
+    cursor: pointer;
+    font-size: 24px; /* Adjust size as needed */
+    color: white; /* Change color as needed */
+  }
+  
+  .down-arrow {
+    bottom: 20px; /* Distance from bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Centering */
+    z-index: 1000; /* Ensure it's above other elements */
+  }
+  
+  .up-arrow {
+    bottom: 20px; /* Distance from bottom */
+    right: 20px; /* Distance from right */
+    z-index: 1000; /* Ensure it's above other elements */
+  }
+  
+  .scroll-container-fluid {
+    height: 200vh; /* Temporarily set a height to allow scrolling */
+  }
+  
+
+  /* .............For Nav Bar Custom btn...................... */
+  .custom-btn {
+    position: fixed;
+    right: 5px;
+    top: 40px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: twinkle 1.5s infinite alternate;
+  }
+
+  /* Button with 3 horizontal white lines */
+  .custom-icon {
+    display: inline-block;
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    position: relative;
+  }
+
+  .custom-icon::before,
+  .custom-icon::after {
+    content: '';
+    display: block;
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    position: absolute;
+  }
+
+  .custom-icon::before {
+    top: -8px;
+  }
+
+  .custom-icon::after {
+    bottom: -8px;
+  }
+
+  /* Twinkle effect */
+  @keyframes twinkle {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 576px) {
+    .custom-btn {
+      right: 2px;
+      top: 40px;
+      width: 35px;
+      height: 35px;
+    }
+
+    .custom-icon {
+      width: 20px;
+    }
+
+    .custom-icon::before,
+    .custom-icon::after {
+      width: 20px;
+    }
+  }
+
+  
+
+.offcanvas-header{
+  background-color: black;
+  height: 37.5px;
+}
+
+.offcanvas-body{
+  background-color: #3e4551;
+  
+}
+.btn-close{
+  background-color: white;
+}

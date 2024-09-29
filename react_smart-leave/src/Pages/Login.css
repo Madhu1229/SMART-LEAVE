@@ -63,7 +63,7 @@
 
 .carousel-item img {
     width: 100%; /* Full width */
-    height: 600px; /* Fixed height */
+    height: 800px; /* Fixed height */
     object-fit: cover; /* Ensure images cover the area */
   }
   
@@ -102,6 +102,9 @@
 
 /* FOR WORDS IN 'carousel-item img'  */
 
+
+
+
   @keyframes flyIn {
     0% {
       transform: translateY(100px);
@@ -127,6 +130,10 @@
   .fly-text-2 {
     animation-delay: 1s;
   }
+
+
+
+  
 
 
 /* For large screens */
@@ -171,6 +178,7 @@
   align-items: center; /* Vertically center the items */
   overflow: hidden; /* Optional: hide overflow if content exceeds width */
   justify-content: flex-start; /* Align items to the left */
+ 
 }
 
 .icon-container {
@@ -301,7 +309,7 @@
 /* ................For Form............ */
 
 .form-outline .form-control {
-  background-color: rgba(87, 100, 90, 0.5); /* bg-success with opacity 25% */
+  background-color:#3e4551; /* bg-success with opacity 25% */
   padding: 0.5rem; /* p-2 equivalent */
   color: white; /* text-white */
   border-radius: 5px; /* Optional: to smooth the edges */
@@ -389,3 +397,16 @@
   color: #e81616; /* Color on hover (lighter shade) */
 }
 
+.row {
+
+  padding: 0;
+  margin-bottom: 0 !important; /* Removes margin-bottom */
+}
+
+.footer{
+  padding: 0;
+  margin: 0;
+}
+
+
+/* .gx-* classes, vertical gutters with .gy-*, or all gutters with .g-* classes. .g-0 is also available to remove gutters. */
