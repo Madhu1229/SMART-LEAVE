@@ -2,6 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Start.css'; 
 
+
 import Login_1 from '../Images/Login_1.jpg';
 import Login_2 from '../Images/Login_2.jpg';
 import Login_3 from '../Images/Login_3.jpg';
@@ -19,14 +20,14 @@ import Button from 'react-bootstrap/Button';
 import {Link, useNavigate} from 'react-router-dom'
 
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
+import Footer from './Footer';
+import NavBar from './NavBar';
+
 
 export default function Start() {
 
   const  Navigate= useNavigate();
-
-
+  
   const reloadPage = () => {
     window.location.reload();  // Reloads the current page
   };
@@ -37,10 +38,9 @@ export default function Start() {
       {/* ..................................................................................................... */}
       {/* FOR LOGO */}
       
-<div className="row1 mb-0 " >
-        
-  <div className="col-sm-12 p-0 " style={{ marginRight: '0PX', padding: '0px' }}>
-    <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
+    <div className="row1 mb-0 " >
+      <div className="col-sm-12 p-0 " style={{ marginRight: '0PX', padding: '0px' }}>
+        <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
       
 
       <div className="col-sm-8 ">
@@ -67,94 +67,16 @@ export default function Start() {
     
   </div>
 </div>
-
-
-
-    {/* ................... */}
-      <div className="row " >
-        <div className="col-sm-12" style={{marginTop:"-8px" , padding:"0", marginLeft:"0" }}>
-          <div className="p-1 mb-2 bg-success   bg-opacity-75  align-items-center justify-content-between">
-          <div className="row " style={{marginRight:"0"}}>
-            <div className="col-sm-2">
-              <img src={Logo} className="fixed-logo img-fluid" alt="SL Army Logo" />
-              
-            </div>
-
-      <div className="col-sm-9" >
-      <div className="animated-text-container">
-        <br/>
-      <h1 className="display-1 large-text">WELCOME TO SMART - LEAVE</h1>
-
-      
-
-        
-        <p className="sentence1" style={{ color: "#3e4551", fontWeight: "700", animation: "flyIn 2s ease-in-out", fontSize: "25px" }}>
-          SRI LANKA ARMY
-        </p>
-
-        <p className="sentence2" style={{ color: "#ff5722", fontWeight: "60px", textDecorationLine: "overline",animation: "flyIn 3s ease-in-out", fontSize: "20px" }}>
-          Defender of the Nature
-        </p>
-
-
-        
-       </div> 
-
-      </div>
-
-{/* ................................Nav Bar........................... */}
-
-<div className="col-sm-1">
-
-  <button class="btn btn-success custom-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" style={{width:"40px",height:"40px",marginRight:"0"}}>
-  <div className="custom-icon">
-          <div className="line"> </div>
-          <div className="line"> </div>
-          <div className="line"> </div>
-  </div>
-  </button>
-
-
-
-
-    <div class="offcanvas offcanvas-end ustom-offcanvas" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-    <div class="offcanvas-header" >
-        <h5 id="offcanvasRightLabel" style={{color:"white"}}>Welcome to Smart Leave!</h5>
-          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-       </div>
-      <div class="offcanvas-body" >
-
-      <ButtonGroup vertical >
-      <Button onClick={reloadPage} variant="btn btn-outline-success" style={{color:"white", width:"300px"}}><i class="bi bi-house-door-fill"> </i>Home</Button>
-      <Button onClick={()=>Navigate("./AboutUs")}variant="btn btn-outline-success" style={{color:"white" ,width:"300px"}}> <i class="bi bi-people-fill"> </i>About Us</Button>
-      <Button  onClick={()=>Navigate("./ContactUs")} variant="btn btn-outline-success" style={{color:"white" ,width:"300px"}}><i class="bi bi-person-rolodex"> </i>Contact Us</Button>
-
-      
-    </ButtonGroup>
-    
-  </div>
-</div>
 </div>
 
 
-      </div>
-      </div>
 
 
+{/* Nav Bar 1 */}
 
+<NavBar/>
 
-
-
-    
-  </div>
-  </div>
-</div>
-
-
-{/* ........................For scroll down arrow ..........................................*/}
-
- {/* ..................................................................................................... */}
-        {/* FOR StartVideo */}
+{/* FOR StartVideo  */}
 
 <div className="row mt-4" >
   <div className="col-sm-12 mainVideo" style={{ marginTop: '-32px', padding: '0' }}>
@@ -172,6 +94,7 @@ export default function Start() {
         {/* FOR CAROUSEL PICTURES */}
 
       <div className="row " >
+        
         <div className="col-sm-12" style={{marginTop:"-8px", padding:"0"}}>
           <div id="carouselExampleSlidesOnly" className="carousel slide" data-bs-ride="carousel" data-bs-interval="5000"> {/* Enable auto cycling */}
             <div className="carousel-inner">
@@ -345,165 +268,10 @@ export default function Start() {
          </div>
 
 
+{/*............................ For Footer................................................ */}
+    <Footer/>
 
-
-{/* ......................................................................................................................................................................................................... */}
-         
- 
-
-
-  
-
-
-
-{/* For Footer................................................ */}
-<div className="row footer">
-
-{/* <!-- Footer --> */}
-<footer className="text-center text-lg-start text-white" style={{ backgroundColor: '#3e4551' }}>
-
-  {/* <!-- Grid container --> */}
-  <div class="p-4 pb-0">
-    {/* <!-- Section: Links --> */}
-    <section class="">
-      {/* <!--Grid row--> */}
-      <div class="row">
-        {/* <!--Grid column--> */}
-        <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
-          <h5 class="text-uppercase">FOOTER CONTENT</h5>
-
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit.
-            Molestiae modi cum ipsam ad, illo possimus laborum ut
-            reiciendis obcaecati. Ducimus, quas. Corrupti, pariatur eaque?
-            Reiciendis assumenda iusto sapiente inventore animi?
-          </p>
-        </div>
-        {/* <!--Grid column--> */}
-
-        {/* <!--Grid column--> */}
-        <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
-          <h5 class="text-uppercase">Links</h5>
-
-          <ul class="list-unstyled mb-0">
-            <li>
-              <a href="#!" class="text-white">Link 1</a>
-            </li>
-            <li>
-              <a href="#!" class="text-white">Link 2</a>
-            </li>
-            <li>
-              <a href="#!" class="text-white">Link 3</a>
-            </li>
-            <li>
-              <a href="#!" class="text-white">Link 4</a>
-            </li>
-          </ul>
-        </div>
-        {/* <!--Grid column--> */}
-
-        {/* <!-- Repeat the grid columns for more links... --> */}
-
-      </div>
-      {/* <!--Grid row--> */}
-    </section>
-    {/* <!-- Section: Links --> */}
-
-    <hr class="mb-4" />
-
-    {/* <!-- Section: CTA --> */}
-    <section class="">
-      <p class="d-flex justify-content-center align-items-center">
-        <span class="me-3">Register for free</span>
-        <button type="button" class="btn btn-outline-light btn-rounded">
-          Sign up!
-        </button>
-      </p>
-    </section>
-    {/* <!-- Section: CTA --> */}
-
-    <hr class="mb-4" />
-
-    {/* <!-- Section: Social media --> */}
-    <section class="mb-4 text-center">
-      {/* <!-- Facebook --> */}
-      <a
-         class="btn btn-outline-light btn-floating m-1"
-         href="#!"
-         role="button"
-         ><i class="fab fa-facebook-f"></i
-        ></a>
-
-      {/* <!-- Twitter --> */}
-      <a
-         class="btn btn-outline-light btn-floating m-1"
-         href="#!"
-         role="button"
-         ><i class="fab fa-twitter"></i
-        ></a>
-
-      {/* <!-- Google --> */}
-      <a
-         class="btn btn-outline-light btn-floating m-1"
-         href="#!"
-         role="button"
-         ><i class="fab fa-google"></i
-        ></a>
-
-      {/* <!-- Instagram --> */}
-      <a
-         class="btn btn-outline-light btn-floating m-1"
-         href="#!"
-         role="button"
-         ><i class="fab fa-instagram"></i
-        ></a>
-
-      {/* <!-- Linkedin --> */}
-      <a
-         class="btn btn-outline-light btn-floating m-1"
-         href="#!"
-         role="button"
-         ><i class="fab fa-linkedin-in"></i
-        ></a>
-
-      {/* <!-- Github --> */}
-      <a
-         class="btn btn-outline-light btn-floating m-1"
-         href="#!"
-         role="button"
-         ><i class="fab fa-github"></i
-        ></a>
-    </section>
-    {/* <!-- Section: Social media --> */}
-  </div>
-  {/* <!-- Grid container --> */}
-
-  {/* <!-- Copyright --> */}
-  <div className="container-fluid p-0">
-  <div
-       className="text-center p-3"
-       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-
-       >
-    © 2024 Copyright :
-    <a class="text-white" href="Start/">
-      smartLeave.com</a>
-  </div>
-  </div>
-  {/* <!-- Copyright --> */}
-</footer>
-{/* <!-- Footer --> */}
-
-
-</div>
-
- 
-
-
-</div>
-
-
-      
+</div>   
 
   )
 }

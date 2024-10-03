@@ -1,0 +1,222 @@
+
+
+  /* Navbar Styles */
+.custom-navbar {
+    background-color: #3e4551; /* Dark background */
+    height: 100%;
+}
+
+.navbar-nav .nav-link-custom {
+    color: white; /* Default link color */
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+ 
+
+.navbar-nav .active .nav-link-custom {
+    color: #f77f00; /* Active link color */
+}
+
+.customize-btn {
+    background-color:0;
+    color: white;
+    border-radius: 5px;
+    padding: 20px 15px;
+}
+
+.customize-btn:hover {
+    background-color: black; /* Darken on hover */
+    border-top: 15px solid yellow;
+}
+
+
+  .customize-btn.active {
+    background-color: black; /* Apply when active */
+    border-top: 15px solid green;
+  }
+
+
+/* Logo customization */
+.navbar-brand .logo {
+    width: 150px; /* Adjust logo size */
+}
+
+/* Responsive behavior */
+@media (max-width: 991px) {
+    .navbar-nav {
+        text-align: center;
+    }
+
+    .nav-link-custom {
+        margin-right: 0;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border-color: green;
+    }
+}
+/* FOR LOGO */
+.fixed-logo {
+    max-width: 500px;  /* Set a max width for the logo */
+    width: 100%;       /* Ensure the logo scales with its container */
+    height: auto;      /* Maintain aspect ratio */
+    margin-right: 300px; /* Add space between the logo and the text */
+    margin-left: 70px;
+    
+  }
+  /* Reduce logo size for smaller screens */
+  .fixed-logo {
+    max-width: 120px; /* Smaller logo on mobile */
+  }
+  .title{
+    color: white;
+  }
+
+
+  
+/* FOR WORDS IN THE NAV BAR */
+.large-text1 {
+    font-size: 5rem; /* Large size */
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif; /* Font choice */
+    opacity: 0; /* Start with invisible text */
+    animation: fadeInGrow 3s ease forwards; /* Animation duration and easing */
+  }
+  
+  /* Animation keyframes for fading in and growing */
+  @keyframes fadeInGrow {
+    0% {
+      opacity: 0;
+      transform: scale(0.5); /* Start small */
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1); /* Full size */
+    }
+  }
+
+  /* Main container */
+.contact-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+  }
+  
+  /* Title styling */
+  .contact-title {
+    font-size: 2.5rem;
+    color: green;
+    font-weight: 600;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+  }
+  
+  /* Info boxes */
+  .info-box {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px 0;
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 1.5s ease-in-out, starShine 5s infinite linear;
+  }
+  
+  /* Info box headings */
+  .info-box h2 {
+    font-size: 1.5rem;
+    color: #2b3a42;
+    margin-bottom: 10px;
+  }
+  
+  /* Info box text */
+  .info-box p {
+    font-size: 1.1rem;
+    color: #4a4a4a;
+    margin: 5px 0;
+  }
+  
+  /* Star animation effect */
+  @keyframes starShine {
+    0% {
+      box-shadow: 0 0 5px #e2e2e2;
+    }
+    50% {
+      box-shadow: 0 0 20px green;
+    }
+    100% {
+      box-shadow: 0 0 5px #e2e2e2;
+    }
+  }
+  
+  /* Fade-in effect */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Small glowing star effect */
+  .info-box::before, .info-box::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 150px;
+    height: 150px;
+    background-color: rgba(62, 69, 81, 0.75);
+    border-radius: 50%;
+    z-index: -1;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    animation: starGlow 5s infinite ease-in-out;
+  }
+  
+  .info-box::after {
+    animation-delay: 2.5s;
+  }
+  
+  @keyframes starGlow {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Media queries for responsiveness */
+  @media (max-width: 768px) {
+    .info-box {
+      width: 90%;
+      padding: 15px;
+    }
+  
+    .contact-title {
+      font-size: 2rem;
+    }
+  
+    .info-box h2 {
+      font-size: 1.3rem;
+    }
+  
+    .info-box p {
+      font-size: 1rem;
+    }
+  }
+  

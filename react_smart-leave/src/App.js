@@ -1,9 +1,5 @@
 import './App.css';
-
-
 import {BrowserRouter as Router,Route,Routes} from 'react-router-dom';
-import { useState } from 'react';
-
 import React from 'react'
 
 
@@ -12,6 +8,11 @@ import Login from './Pages/Login';
 import AboutUs from './Pages/AboutUs';
 import ContactUs from './Pages/ContactUs';
 import LeaveApply from './LeaveApplyInterface/LeaveApply';
+import LeaveProfile from './LeaveApplyInterface/LeaveProfile';
+import LeaveStatus from './LeaveApplyInterface/LeaveStatus';
+import Notifications from './LeaveApplyInterface/Notifications';
+import NavBar from './Pages/NavBar';
+import Footer from './Pages/Footer';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -29,7 +30,13 @@ function App() {
       <Route path="/AboutUs" element={<AboutUs />}/>
       <Route path="/ContactUs" element={<ContactUs />}/>
       <Route path="/LeaveApply" element={<LeaveApply />}/>
-      
+      <Route path="/LeaveProfile" element={<LeaveProfile />}/>
+      <Route path="/LeaveStatus" element={<LeaveStatus />}/>
+      <Route path="/Notifications" element={<Notifications />}/>
+      <Route path="/NavBar" element={<NavBar />}/>
+      <Route path="/Footer" element={<Footer />}/>
+
+
       </Routes>
       
     </div>
