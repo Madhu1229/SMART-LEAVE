@@ -14,8 +14,11 @@ import Notifications from './LeaveApplyInterface/Notifications';
 import NavBar from './Pages/NavBar';
 import Footer from './Pages/Footer';
 import DashBoard from './AdminInterface/DashBoard';
+import ViewMembers from './AdminInterface/ViewMembers';
+import NewMember from './AdminInterface/NewMember';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 
 
@@ -37,6 +40,10 @@ function App() {
       <Route path="/NavBar" element={<NavBar />}/>
       <Route path="/Footer" element={<Footer />}/>
       <Route path="/DashBoard" element={<DashBoard />}/>
+      <Route path="/ViewMembers" element={<ViewMembers />}/>
+      
+      <Route path="/NewMember" element={<NewMember />}/>
+
 
 
       </Routes>
