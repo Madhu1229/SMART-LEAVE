@@ -13,6 +13,7 @@ import LeaveStatus from './LeaveApplyInterface/LeaveStatus';
 import Notifications from './LeaveApplyInterface/Notifications';
 import NavBar from './Pages/NavBar';
 import Footer from './Pages/Footer';
+import DashBoard from './AdminInterface/DashBoard';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -35,6 +36,7 @@ function App() {
       <Route path="/Notifications" element={<Notifications />}/>
       <Route path="/NavBar" element={<NavBar />}/>
       <Route path="/Footer" element={<Footer />}/>
+      <Route path="/DashBoard" element={<DashBoard />}/>
 
 
       </Routes>
