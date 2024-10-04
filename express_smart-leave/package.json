@@ -4,7 +4,8 @@
   "description": "SMART LEAVE(Leave apply system for Sri Lanka Army)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start":"node server.js",
+    "dev":"nodemon server.js"
   },
   "author": "P.U.M.Wijayanthi",
   "license": "ISC",
