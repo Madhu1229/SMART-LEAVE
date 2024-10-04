@@ -27,6 +27,27 @@ const PORT = process.env.PORT || 8081;
     console.log("MongoDB Connection Success!")
  })
 
+
+
+// Access members.js in routes folder
+const memberRouter = require("./routes/members.js")
+app.use("/member",memberRouter);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.listen(PORT , () =>{
     console.log(`Server is up and running on port number: ${PORT}`)
 });
