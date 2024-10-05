@@ -14,6 +14,7 @@ const NewMember = () => {
     telephone: '',
     maritalStatus: '',
     educationLevel: '',
+    memberID:'',
     designation: '',
     subDesignation: '',
     ministry: '',
@@ -64,16 +65,17 @@ const NewMember = () => {
   const validateFields = () => {
     let validationErrors = {};
     
+    if (!formData.photo) validationErrors.photo = "Please fill this field.";
     if (!formData.fullName) validationErrors.fullName = "Please fill this field.";
     if (!formData.address.street) validationErrors.street = "Please fill this field.";
     if (!formData.address.city) validationErrors.city = "Please fill this field.";
-    if (!formData.address.state) validationErrors.city = "Please fill this field.";
-    if (!formData.address.zipCode) validationErrors.city = "Please fill this field.";
+    if (!formData.address.state) validationErrors.state = "Please fill this field.";
+    if (!formData.address.zipCode) validationErrors.zipCode = "Please fill this field.";
     if (!formData.gender) validationErrors.gender = "Please fill this field.";
     if (!formData.birthday) validationErrors.birthday = "Please fill this field.";
     if (!formData.email) validationErrors.email = "Please fill this field.";
     if (!formData.mobile) validationErrors.mobile = "Please fill this field.";
-    if (!formData.photo) validationErrors.photo = "Please fill this field.";
+    if (!formData.memberID) validationErrors.memberID = "Please fill this field.";
     if (!formData.designation) validationErrors.designation = "Please fill this field.";
     if (!formData.subDesignation) validationErrors.subDesignation = "Please fill this field.";
     if (!formData.maritalStatus) validationErrors.maritalStatus = "Please fill this field.";
@@ -171,6 +173,28 @@ const NewMember = () => {
                       className={`form-control ${errors.city ? 'is-invalid' : ''}`} 
                     />
                     {renderErrorMessage('city')}
+
+
+                    <input 
+                      type="text" 
+                      name="state" 
+                      placeholder="state" 
+                      value={formData.address.state} 
+                      onChange={handleInputChange}
+                      className={`form-control ${errors.state ? 'is-invalid' : ''}`} 
+                    />
+                    {renderErrorMessage('state')}
+
+                    <input 
+                      type="text" 
+                      name="zipCode" 
+                      placeholder="zipCode" 
+                      value={formData.address.zipCode} 
+                      onChange={handleInputChange}
+                      className={`form-control ${errors.zipCode ? 'is-invalid' : ''}`} 
+                    />
+                    {renderErrorMessage('zipCode')}
+
                   </td>
                 </tr>
                 <tr>
@@ -293,7 +317,21 @@ const NewMember = () => {
             <h3>Step 2: Member Details</h3>
             <Table striped bordered hover>
               <tbody>
-            
+
+              <tr>
+                  <td><label>Member ID</label></td>
+                  <td>
+                    <input 
+                      type="text" 
+                      name="memberID" 
+                      value={formData.memberID} 
+                      onChange={handleInputChange}
+                      className={`form-control ${errors.memberID ? 'is-invalid' : ''}`} 
+                    />
+                    {renderErrorMessage('memberID')}
+                  </td>
+                </tr>
+
               <tr>
                   <td><label>Designation</label></td>
                   <td>

@@ -1,28 +1,32 @@
- const express = require("express");
- const mongoose = require("mongoose");
- const bodyParser = require("body-parser");
- const cors = require("cors");
- const dotenv = require("dotenv");
+ import express from "express";
+ import mongoose from "mongoose";
+ import bodyParser from "body-parser";
+ import cors from "cors";
+ import { config } from "dotenv";
 
+ const { connect, connection: _connection } = mongoose;
+
+ 
 const app = express();
-dotenv.config();  // Load environment variables from .env file
+config();  // Load environment variables from .env file
 
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT||8085;
 
 
  app.use(cors());
  app.use(bodyParser.json());
 
+
  const URL = process.env.MONGODB_URL;
 
- mongoose.connect(URL,{
+ connect(URL,{
     useNewUrlParser: true,
     useUnifiedTopology: true 
     
 
  });
 
- const connection = mongoose.connection;
+ const connection = _connection;
  connection.once("open" , () => {
     console.log("MongoDB Connection Success!")
  })
@@ -30,21 +34,8 @@ const PORT = process.env.PORT || 8081;
 
 
 // Access members.js in routes folder
-const memberRouter = require("./routes/members.js")
-app.use("/member",memberRouter);
-
-
-
-
-
-
-
-
-
-
-
-
-
+import memberRouter from "./routes/members.js";
+app.use("/Member",memberRouter);
 
 
 
