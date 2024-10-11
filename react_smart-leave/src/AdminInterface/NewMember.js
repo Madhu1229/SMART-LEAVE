@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { Form, Button, Col, Row, Table } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Form, Button, Table } from 'react-bootstrap';
+import axios from 'axios'
 
 const NewMember = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    photo: null,
     fullName: '',
-    address: { street: '', city: '', state: '', zipCode: '' },
+    address: { street:'' , city: '', state: '', zipCode: '' },
     gender: '',
     birthday: '',
     age: '',
@@ -14,7 +16,7 @@ const NewMember = () => {
     telephone: '',
     maritalStatus: '',
     educationLevel: '',
-    memberID:'',
+    memberID: '',
     designation: '',
     subDesignation: '',
     ministry: '',
@@ -27,23 +29,160 @@ const NewMember = () => {
     otherDocument2: null,
   });
   
-  const [errors, setErrors] = useState({});  // Track errors for fields
-  const [isSubmitted, setIsSubmitted] = useState(false); // Check if form is submitted
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
   
+    if (validateFields()) {
+      // Create FormData instance to handle file uploads
+      const data = new FormData();
+  
+      // Append non-file fields to the form data
+      data.append('fullName', formData.fullName);
+      data.append('street', formData.address.street);
+      data.append('city',  formData.address.city);
+      data.append('state', formData.address.state);
+      data.append('zipCode', formData.address.zipCode);
+      data.append('gender', formData.gender);
+      data.append('birthday', formData.birthday);
+      data.append('age', formData.age);
+      data.append('email', formData.email);
+      data.append('mobile', formData.mobile);
+      data.append('telephone', formData.telephone);
+      data.append('maritalStatus', formData.maritalStatus);
+      data.append('educationLevel', formData.educationLevel);
+      data.append('memberID', formData.memberID);
+      data.append('designation', formData.designation);
+      data.append('subDesignation', formData.subDesignation);
+      data.append('ministry', formData.ministry);
+      data.append('joiningDate', formData.joiningDate);
+      data.append('leaveTaken', formData.leaveTaken);
+      data.append('leaveRemaining', formData.leaveRemaining);
+      data.append('role', formData.role);
+      
+  
+      // Append file fields to the form data (ensure files are selected)
+      if (formData.photo) data.append('photo', formData.photo);
+      if (formData.birthCertificate) data.append('birthCertificate', formData.birthCertificate);
+      if (formData.otherDocument1) data.append('otherDocument1', formData.otherDocument1);
+      if (formData.otherDocument2) data.append('otherDocument2', formData.otherDocument2);
+  
+      // Proceed to submit the form data
+      axios.post('http://localhost:8093/Member/add', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data', // Set the proper content type
+        }
+      })
+      .then(() => {
+        alert('Member Added');
+        handleFormReset(); // Reset form after successful submission
+      })
+      .catch((err) => {
+        if (err.response) {
+          alert(`Error: ${JSON.stringify(err.response.data)}`);
+        } else {
+          alert('Error submitting form. Please try again.');
+        }
+      });
+    } else {
+      alert('Please fix the errors before submitting.');
+    }
+  };
+  
+  const [errors, setErrors] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  const [selectedFile, setSelectedFile] = useState(''); // Add this line
+
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    // Clear error for the specific field if it's now filled
+    setErrors({
+      ...errors,
+      [name]: value ? '' : errors[name],
+    });
+
+    if (name === 'street' || name === 'city' || name === 'state' || name === 'zipCode') {
+      setFormData({
+        ...formData,
+        address: {
+          ...formData.address,
+          [name]: value,
+        },
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
+
+
+  useEffect(() => {
+    // Reset selectedFile on component mount
+    setSelectedFile('');
+}, []);
 
   const handleFileChange = (e) => {
-    const { name } = e.target;
-    setFormData({ ...formData, [name]: e.target.files[0] });
-  };
+    const { name } = e.target; // Extract name from the input
+    const file = e.target.files[0];
+    
+  
+  
+// Update the formData for the specific file input
+setFormData((prevData) => ({
+  ...prevData,
+  [name]: file,
+}));
 
-  // Function to calculate age from birthday
+   
+  
+// Clear errors (if any) for the current input field
+setErrors((prevErrors) => ({
+  ...prevErrors,
+  [name]: file ? '' : prevErrors[name],
+}));
+  };
+  
+
+  const handleFormReset = () => {
+    // Reset form data and selected file
+    setFormData({
+        photo: '',
+        fullName: '',
+        address: { street: '', city: '', state: '', zipCode: '' },
+        gender: '',
+        birthday: '',
+        age: '',
+        email: '',
+        mobile: '',
+        telephone: '',
+        maritalStatus: '',
+        educationLevel: '',
+        memberID: '',
+        designation: '',
+        subDesignation: '',
+        ministry: '',
+        joiningDate: '',
+        leaveTaken: '',
+        leaveRemaining: '',
+        role: '',
+        birthCertificate: '',
+        otherDocument1: '',
+        otherDocument2: '',
+
+    });
+    setSelectedFile('');
+    setErrors({});
+};
+
+  
+  
   const calculateAge = (birthday) => {
     const birthDate = new Date(birthday);
     const today = new Date();
@@ -59,82 +198,95 @@ const NewMember = () => {
     const birthday = e.target.value;
     const age = calculateAge(birthday);
     setFormData({ ...formData, birthday, age });
+
+    // Clear birthday error
+    setErrors({
+      ...errors,
+      birthday: birthday ? '' : errors.birthday,
+    });
   };
 
-  // Validation function for checking empty fields
   const validateFields = () => {
     let validationErrors = {};
+
+    if (!formData.photo) validationErrors.photo = "Please upload a photo.";
+    if (!formData.fullName) validationErrors.fullName = "Please enter your full name.";
     
-    if (!formData.photo) validationErrors.photo = "Please fill this field.";
-    if (!formData.fullName) validationErrors.fullName = "Please fill this field.";
-    if (!formData.address.street) validationErrors.street = "Please fill this field.";
-    if (!formData.address.city) validationErrors.city = "Please fill this field.";
-    if (!formData.address.state) validationErrors.state = "Please fill this field.";
-    if (!formData.address.zipCode) validationErrors.zipCode = "Please fill this field.";
-    if (!formData.gender) validationErrors.gender = "Please fill this field.";
-    if (!formData.birthday) validationErrors.birthday = "Please fill this field.";
-    if (!formData.email) validationErrors.email = "Please fill this field.";
-    if (!formData.mobile) validationErrors.mobile = "Please fill this field.";
-    if (!formData.memberID) validationErrors.memberID = "Please fill this field.";
-    if (!formData.designation) validationErrors.designation = "Please fill this field.";
-    if (!formData.subDesignation) validationErrors.subDesignation = "Please fill this field.";
-    if (!formData.maritalStatus) validationErrors.maritalStatus = "Please fill this field.";
-    if (!formData.educationLevel) validationErrors.educationLevel = "Please fill this field.";
-    if (!formData.ministry) validationErrors.ministry = "Please fill this field.";
-    if (!formData.joiningDate) validationErrors.joiningDate = "Please fill this field.";
-    if (!formData.leaveTaken) validationErrors.leaveTaken = "Please fill this field.";
-    if (!formData.leaveRemaining) validationErrors.leaveRemaining = "Please fill this field.";
-    if (!formData.role) validationErrors.role = "Please fill this field.";
-    
-
-
-
-
-    // More validations for other fields can be added here
-    return validationErrors;
-  };
-
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const validationErrors = validateFields();
-    setErrors(validationErrors);
-
-    if (Object.keys(validationErrors).length === 0) {
-      // If no errors, submit the form
-      console.log("Form Submitted:", formData);
-      setIsSubmitted(true);
+    // Check if address exists before accessing its properties
+    if (!formData.address) {
+        validationErrors.address = "Address information is required.";
     } else {
-      setIsSubmitted(false);  // If there are errors, mark as not submitted
+        if (!formData.address.street) validationErrors.street = "Please enter the street address.";
+        if (!formData.address.city) validationErrors.city = "Please enter the city.";
+        if (!formData.address.state) validationErrors.state = "Please enter the state.";
+        if (!formData.address.zipCode) validationErrors.zipCode = "Please enter the zip code.";
     }
+    
+    if (!formData.gender) validationErrors.gender = "Please select a gender.";
+    if (!formData.birthday) validationErrors.birthday = "Please select your birthday.";
+    if (!formData.email) validationErrors.email = "Please enter your email address.";
+    if (!formData.mobile) validationErrors.mobile = "Please enter your mobile number.";
+    if (!formData.memberID) validationErrors.memberID = "Please enter the member ID.";
+    if (!formData.designation) validationErrors.designation = "Please enter the designation.";
+    if (!formData.subDesignation) validationErrors.subDesignation = "Please enter the sub-designation.";
+    if (!formData.maritalStatus) validationErrors.maritalStatus = "Please select your marital status.";
+    if (!formData.educationLevel) validationErrors.educationLevel = "Please select the education level.";
+    if (!formData.ministry) validationErrors.ministry = "Please enter the ministry.";
+    if (!formData.joiningDate) validationErrors.joiningDate = "Please enter the joining date.";
+    if (!formData.leaveTaken) validationErrors.leaveTaken = "Please enter the number of leaves taken.";
+    if (!formData.leaveRemaining) validationErrors.leaveRemaining = "Please enter the remaining leaves.";
+    if (!formData.role) validationErrors.role = "Please enter the role.";
+    if (!formData.birthCertificate) validationErrors.birthCertificate = "Please upload the birth certificate.";
+    if (!formData.otherDocument1) validationErrors.otherDocument1 = "Please upload document 1.";
+    if (!formData.otherDocument2) validationErrors.otherDocument2 = "Please upload document 2.";
+
+    setErrors(validationErrors);
+    return Object.keys(validationErrors).length === 0;  // Returns true if there are no errors
+};
+
+
+ 
+
+  // Handle next button click
+  const handleNext = (e) => {
+    e.preventDefault();
+    setStep((prevStep) => prevStep + 1);
   };
 
-  // Function to display validation error messages
+  // Handle previous button click
+  const handlePrevious = (e) => {
+    e.preventDefault();
+    setStep((prevStep) => prevStep - 1);
+  };
+
   const renderErrorMessage = (field) => {
-    return errors[field] ? (
-      <div className="text-danger">{errors[field]}</div>
-    ) : null;
+    return errors[field] ? <div className="text-danger">{errors[field]}</div> : '';
   };
 
+
+  
   // Rendering steps based on `step` state
   const renderStep = () => {
+    
     switch (step) {
       case 1:
         return (
+          
           <div>
             <h3>Step 1: Personal Details</h3>
             <Table striped bordered hover>
               <tbody>
                 <tr>
-                  <td><label>Upload Photo</label></td>
+                  <td><label>Officer's Photo</label></td>
                   <td>
                     <input
                       type="file"
                       name="photo"
-                      value={formData.photo} 
-                      onChange={handleInputChange}
+                      onChange={handleFileChange}
+                      accept="application/pdf,image/*"
                       className={`form-control ${errors.photo ? 'is-invalid' : ''}`}
-                    />
+                    required/>
+                    {formData.photo && <p>Photo Selected: {formData.photo.name}</p>}
                     {renderErrorMessage('photo')}
                   </td>
                 </tr>
@@ -164,6 +316,7 @@ const NewMember = () => {
                       className={`form-control ${errors.street ? 'is-invalid' : ''}`} 
                     />
                     {renderErrorMessage('street')}
+                    
                     <input 
                       type="text" 
                       name="city" 
@@ -235,7 +388,7 @@ const NewMember = () => {
                   <td><label>Email Address</label></td>
                   <td>
                     <input 
-                      type="email" 
+                      type="text" 
                       name="email" 
                       value={formData.email} 
                       onChange={handleInputChange}
@@ -308,18 +461,18 @@ const NewMember = () => {
                 </tr>
               </tbody>
             </Table>
-            <Button variant="primary" onClick={nextStep}>Next</Button>
+            {step < 2 && <button onClick={handleNext}>Next</button>}
           </div>
         );
       case 2:
         return (
           <div>
-            <h3>Step 2: Member Details</h3>
+            <h3>Step 2: Official Details</h3>
             <Table striped bordered hover>
               <tbody>
 
               <tr>
-                  <td><label>Member ID</label></td>
+                  <td><label>Army ID No</label></td>
                   <td>
                     <input 
                       type="text" 
@@ -467,8 +620,9 @@ const NewMember = () => {
                 </tr>
               </tbody>
             </Table>
-            <Button variant="secondary" onClick={prevStep}>Previous</Button>
-            <Button variant="primary" onClick={nextStep}>Next</Button>
+            
+            {step > 1 && <button onClick={handlePrevious}>Previous</button>}
+            {step < 3 && <button onClick={handleNext}>Next</button>}
           </div>
         );
       case 3:
@@ -486,12 +640,13 @@ const NewMember = () => {
                       onChange={handleFileChange}
                       accept="application/pdf,image/*"
                       className={`form-control ${errors.birthCertificate ? 'is-invalid' : ''}`} 
-                    />
+                    required/>
+                     {formData.birthCertificate && <p>Birth Certificate Selected: {formData.birthCertificate.name}</p>}
                     {renderErrorMessage('birthCertificate')}
                   </td>
                 </tr>
                 <tr>
-                  <td><label>Other Document 1</label></td>
+                  <td><label>National ID</label></td>
                   <td>
                     <input 
                       type="file" 
@@ -499,12 +654,13 @@ const NewMember = () => {
                       onChange={handleFileChange}
                       accept="application/pdf,image/*"
                       className={`form-control ${errors.otherDocument1 ? 'is-invalid' : ''}`} 
-                    />
+                    required/>
+                     {formData.otherDocument1 && <p>National ID Selected: {formData.otherDocument1.name}</p>}
                     {renderErrorMessage('otherDocument1')}
                   </td>
                 </tr>
                 <tr>
-                  <td><label>Other Document 2</label></td>
+                  <td><label>Member ID</label></td>
                   <td>
                     <input 
                       type="file" 
@@ -512,27 +668,41 @@ const NewMember = () => {
                       onChange={handleFileChange}
                       accept="application/pdf,image/*"
                       className={`form-control ${errors.otherDocument2 ? 'is-invalid' : ''}`} 
-                    />
+                    required/>
+                    {formData.otherDocument2 && <p>Other Document 2 Selected: {formData.otherDocument2.name}</p>}
                     {renderErrorMessage('otherDocument2')}
                   </td>
                 </tr>
               </tbody>
             </Table>
-            <Button variant="secondary" onClick={prevStep}>Previous</Button>
-            <Button variant="primary" type="submit" onClick={handleSubmit}>Submit</Button>
+
+            
+            {step > 1 && <button onClick={handlePrevious}>Previous</button>}
+            
+            {step === 3 && <button onClick={handleSubmit}>Submit</button>}
+            <button type="reset" onClick={handleFormReset}>Reset</button>
           </div>
         );
       default:
-        return null;
+        return '';
     }
   };
 
   return (
+
+    <div className="container" action="/Member/add" method="POST" enctype="multipart/form-data">
     <Form onSubmit={handleSubmit}>
       {renderStep()}
       {isSubmitted && <div className="text-success">Form Submitted Successfully!</div>}
     </Form>
+    </div>
   );
+
+
+
+
+
+
 };
 
 export default NewMember;
