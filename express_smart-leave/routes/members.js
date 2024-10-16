@@ -3,6 +3,8 @@ import Member from "../models/Member.js";
 import multer from 'multer';
 import path from 'path';
 
+
+
 // Setup multer for file uploads, saving files to 'uploads' directory
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -48,6 +50,9 @@ router.post("/add", upload.fields([
             maritalStatus,
             educationLevel,
             memberID,
+            serviceNo,
+            nic,
+            bloodGroup,
             designation,
             subDesignation,
             ministry,
@@ -74,6 +79,9 @@ router.post("/add", upload.fields([
             maritalStatus,
             educationLevel,
             memberID,
+            serviceNo,
+            nic,
+            bloodGroup,
             designation,
             subDesignation,
             ministry,
@@ -109,6 +117,7 @@ router.get("/", async (req, res) => {
 // Update data
 router.put("/update/:memberID", async (req, res) => {
     try {
+        console.log('Update request received for memberID:', req.params.memberID);
         const memberID = req.params.memberID;
         const {
             photo,
@@ -122,6 +131,9 @@ router.put("/update/:memberID", async (req, res) => {
             telephone,
             maritalStatus,
             educationLevel,
+            serviceNo,
+            nic,
+            bloodGroup,
             designation,
             subDesignation,
             ministry,
@@ -151,6 +163,9 @@ router.put("/update/:memberID", async (req, res) => {
             telephone,
             maritalStatus,
             educationLevel,
+            serviceNo,
+            nic,
+            bloodGroup,
             memberID,
             designation,
             subDesignation,
@@ -204,5 +219,23 @@ router.get("/get/:memberID", async (req, res) => {
         res.status(500).send({ status: "Error fetching member", error: err.message });
     }
 });
+
+// Serve files from the 'uploads' folder
+router.get('/uploads/:filename', (req, res) => {
+    const filePath = path.join(__dirname, '../uploads', req.params.filename); // Adjust the path if necessary
+
+    // Log the file path for debugging
+    console.log('Requested file path:', filePath);
+
+    // Send the file for download
+    res.download(filePath, (err) => {
+        if (err) {
+            console.error(err);
+            res.status(404).send('File not found.');
+        }
+    });
+});
+
+
 
 export default router;

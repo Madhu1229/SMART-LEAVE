@@ -17,6 +17,9 @@ const NewMember = () => {
     maritalStatus: '',
     educationLevel: '',
     memberID: '',
+    serviceNo:'',
+    nic:'',
+    bloodGroup:'',
     designation: '',
     subDesignation: '',
     ministry: '',
@@ -52,6 +55,9 @@ const NewMember = () => {
       data.append('maritalStatus', formData.maritalStatus);
       data.append('educationLevel', formData.educationLevel);
       data.append('memberID', formData.memberID);
+      data.append('serviceNo', formData.serviceNo);
+      data.append('nic', formData.nic);
+      data.append('bloodGroup', formData.bloodGroup);
       data.append('designation', formData.designation);
       data.append('subDesignation', formData.subDesignation);
       data.append('ministry', formData.ministry);
@@ -165,6 +171,9 @@ setErrors((prevErrors) => ({
         maritalStatus: '',
         educationLevel: '',
         memberID: '',
+        serviceNo:'',
+        nic:'',
+        bloodGroup:'',
         designation: '',
         subDesignation: '',
         ministry: '',
@@ -227,6 +236,8 @@ setErrors((prevErrors) => ({
     if (!formData.email) validationErrors.email = "Please enter your email address.";
     if (!formData.mobile) validationErrors.mobile = "Please enter your mobile number.";
     if (!formData.memberID) validationErrors.memberID = "Please enter the member ID.";
+    if (!formData.serviceNo) validationErrors.serviceNo = "Please enter the service No.";
+    if (!formData.nic) validationErrors.nic = "Please enter the NIC No.";
     if (!formData.designation) validationErrors.designation = "Please enter the designation.";
     if (!formData.subDesignation) validationErrors.subDesignation = "Please enter the sub-designation.";
     if (!formData.maritalStatus) validationErrors.maritalStatus = "Please select your marital status.";
@@ -388,7 +399,7 @@ setErrors((prevErrors) => ({
                   <td><label>Email Address</label></td>
                   <td>
                     <input 
-                      type="text" 
+                      type="email" 
                       name="email" 
                       value={formData.email} 
                       onChange={handleInputChange}
@@ -485,8 +496,69 @@ setErrors((prevErrors) => ({
                   </td>
                 </tr>
 
+
+                <tr>
+                  <td><label>Service No</label></td>
+                  <td>
+                    <input 
+                      type="text" 
+                      name="serviceNo" 
+                      value={formData.serviceNo} 
+                      onChange={handleInputChange}
+                      className={`form-control ${errors.serviceNo ? 'is-invalid' : ''}`} 
+                    />
+                    {renderErrorMessage('serviceNo')}
+                  </td>
+                </tr>
+
+
+                <tr>
+                  <td><label>NIC No</label></td>
+                  <td>
+                    <input 
+                      type="text" 
+                      name="nic" 
+                      value={formData.nic} 
+                      onChange={handleInputChange}
+                      className={`form-control ${errors.nic ? 'is-invalid' : ''}`} 
+                    />
+                    {renderErrorMessage('nic')}
+                  </td>
+                </tr>
+
+
+
+                <tr>
+                  <td><label>Blood Group</label></td>
+                  <td>
+                    <Form.Control 
+                      as="select" 
+                      name="bloodGroup" 
+                      value={formData.bloodGroup} 
+                      onChange={handleInputChange}
+                      className={`form-control${errors.bloodGroup ? 'is-invalid' : ''}`}
+                    >
+                      <option value="">Select Blood Group</option>
+                      <option value="ARh+">A Rh+</option>
+                      <option value="BRh+">B Rh+</option>
+                      <option value="ABRh+">AB Rh+</option>
+                      <option value="ORh+">O Rh+</option>
+                      <option value="ARh-">A Rh-</option>
+                      <option value="BRh-">B Rh-</option>
+                      <option value="ABRh-">AB Rh-</option>
+                      <option value="ORh-">O Rh-</option>
+                      
+                    </Form.Control>
+                    {renderErrorMessage('bloodGroup')}
+                  </td>
+                </tr>
+
+               
+             
+
+
               <tr>
-                  <td><label>Designation</label></td>
+                  <td><label>Rank</label></td>
                   <td>
                     <Form.Control 
                       as="select" 
@@ -504,7 +576,7 @@ setErrors((prevErrors) => ({
                 </tr>
                 {formData.designation === "commisioned" && (
                   <tr>
-                    <td><label>Sub Designation</label></td>
+                    <td><label>Sub Rank</label></td>
                     <td>
                       <Form.Control 
                         as="select" 
@@ -527,7 +599,7 @@ setErrors((prevErrors) => ({
                 )}
                 {formData.designation === "non-commisioned" && (
                   <tr>
-                    <td><label>Sub Designation</label></td>
+                    <td><label>Sub Rank</label></td>
                     <td>
                       <Form.Control 
                         as="select" 
@@ -605,19 +677,28 @@ setErrors((prevErrors) => ({
                     {renderErrorMessage('leaveRemaining')}
                   </td>
                 </tr>
+               
+
                 <tr>
                   <td><label>Role</label></td>
                   <td>
-                    <input 
-                      type="text" 
+                    <Form.Control 
+                      as="select" 
                       name="role" 
                       value={formData.role} 
                       onChange={handleInputChange}
-                      className={`form-control ${errors.role ? 'is-invalid' : ''}`} 
-                    />
+                      className={`form-control${errors.role ? 'is-invalid' : ''}`}
+                    >
+                      <option value="">Select Role</option>
+                      <option value="admin1">Admin I</option>
+                      <option value="admin2">Admin II</option>
+                      <option value="leaveApplicant">Leave Applicant</option>
+          
+                    </Form.Control>
                     {renderErrorMessage('role')}
                   </td>
                 </tr>
+
               </tbody>
             </Table>
             
@@ -660,7 +741,7 @@ setErrors((prevErrors) => ({
                   </td>
                 </tr>
                 <tr>
-                  <td><label>Member ID</label></td>
+                  <td><label>Army ID</label></td>
                   <td>
                     <input 
                       type="file" 
