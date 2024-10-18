@@ -133,6 +133,9 @@ if (firstErrorField) firstErrorField.current.focus();
   return Object.keys(newErrors).length === 0; // Return true if no errors
 };
 
+
+
+
 // Handle form submission
 const handleSubmit = (e) => {
     e.preventDefault();
@@ -354,13 +357,9 @@ return (
               
             </Form.Group>
 
-            
-          </Col>
-
-          {/* Second Column */}
-          <Col md={6}>
-              <Form.Group className="mb-3" controlId="firstAppointmentDate">
+            <Form.Group className="mb-3" controlId="firstAppointmentDate">
                 <Form.Label style={{ color: '#4CAF50' }}>Date of First Appointment</Form.Label>
+                <br/>
                 <DatePicker
                   selected={formData.firstAppointmentDate}
                   onChange={(date) => handleDateChange(date,'firstAppointmentDate')}
@@ -372,8 +371,16 @@ return (
                 />
               </Form.Group>
 
+            
+          </Col>
+
+          {/* Second Column */}
+          <Col md={6}>
+           
+
             <Form.Group className="mb-3" controlId="commenceLeaveDate">
             <Form.Label style={{ color: '#4CAF50' }}>Date of Commencing Leave</Form.Label>
+                <br/>
                 <DatePicker
                   selected={formData.commenceLeaveDate}
                   onChange={(date) => handleDateChange(date,'commenceLeaveDate')}
@@ -387,6 +394,7 @@ return (
 
             <Form.Group className="mb-3" controlId="resumeDutiesDate">
               <Form.Label style={{ color: '#4CAF50' }}>Date of Resuming Duties</Form.Label>
+              <br/>
               <DatePicker
                   selected={formData.commenceLeaveDate}
                   onChange={(date) => handleDateChange(date,'commenceLeaveDate')}
@@ -452,6 +460,7 @@ return (
             {/* Date */}
             <Form.Group className="mb-3" controlId="date">
             <Form.Label style={{ color: '#4CAF50' }}>Date</Form.Label>
+              <br/>
               <DatePicker
                 selected={formData.date}
                 onChange={(date) => handleDateChange(date,'date')}
