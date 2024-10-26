@@ -1,102 +1,142 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Button, Badge, Container, Form } from 'react-bootstrap';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Table, Button, Form, Image } from "react-bootstrap";
 
-export default function ApprovalDashboard() {
-  const [applications, setApplications] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
-  const [isLoading, setIsLoading] = useState(false);
+function LeaveApplicationsByDate() {
+    const [date, setDate] = useState("");
+    const [applications, setApplications] = useState([]);
+    const [membersData, setMembersData] = useState([]); // State to store members data
 
-  useEffect(() => {
-    fetchApplications(selectedDate);
-  }, [selectedDate]);
 
-  const fetchApplications = async (date) => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/date/${date}`);
-      setApplications(response.data);
-    } catch (error) {
-      console.error('Error fetching applications:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    useEffect(() => {
+      const fetchMembersData = async () => {
+          try {
+              const response = await axios.get(`http://localhost:8093/Members/getAll`); // Adjust this endpoint to your needs
+              setMembersData(response.data.members); // Assuming the members data is in response.data.members
+          } catch (error) {
+              console.error("Error fetching members data:", error);
+          }
+      };
+
+      fetchMembersData();
+  }, []); // Empty dependency array means this runs once when the component mounts
+
+
+    const handleDateChange = (e) => {
+        setDate(e.target.value);
+    };
+
+    const fetchApplicationsByDate = async () => {
+      try {
+          const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, {
+              params: { date },
+          });
+          const leaveApplications = response.data.applications;
+
+          // Match leave applications with members data
+          const matchedApplications = leaveApplications.map(app => {
+              const member = membersData.find(member => 
+                  member.fullName === app.name  && 
+                  member.designation === app.designation
+               );
+
+              // Check if there is at least one mismatch
+              const isValid = member ? 
+                  (member.fullName === app.name && 
+                   member.designation === app.designation
+                ) : false;
+
+              return {
+                  ...app,
+                  isValid: isValid // true if matched, false if not matched
+              };
+          });
+
+          setApplications(matchedApplications);
+      } catch (error) {
+          console.error("Error fetching applications:", error);
+          alert("Error fetching applications");
+      }
   };
 
-  const handleApprove = async (id, level) => {
-    try {
-      const response = await axios.post(`http://localhost:8093/Member_LeaveApplicant/approve`, { id, level });
-      // Update the state to reflect approval status
-      setApplications(prevApplications =>
-        prevApplications.map(app =>
-          app.id === id ? { ...app, approvalLevel: response.data.approvalLevel } : app
-        )
-      );
-      alert(`Application approved at Level ${level}`);
-    } catch (error) {
-      console.error('Error approving application:', error);
-    }
-  };
 
-  return (
-    <Container className="mt-5">
-      <h2>View Submitted Applications</h2>
-      <Form.Group controlId="dateSelector" className="mb-3">
-        <Form.Label>Select Date:</Form.Label>
-        <Form.Control
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-        />
-      </Form.Group>
-      {isLoading ? (
-        <div>Loading applications...</div>
-      ) : (
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Applicant Name</th>
-              <th>Designation</th>
-              <th>Submission Date</th>
-              <th>Approval Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {applications.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="text-center">No applications submitted on this date.</td>
-              </tr>
+    return (
+        <div className="container mt-5">
+            <h2 className="mb-4">View Leave Applications by Date</h2>
+            
+            <Form.Group controlId="date">
+                <Form.Label>Select Date:</Form.Label>
+                <Form.Control type="date" value={date} onChange={handleDateChange} />
+            </Form.Group>
+            <Button className="mt-3" variant="primary" onClick={fetchApplicationsByDate}>
+                Fetch Applications
+            </Button>
+
+            {applications.length > 0 ? (
+
+                <Table striped bordered hover responsive className="mt-4">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Designation</th>
+                            <th>Sub Designation</th>
+                            <th>Ministry</th>
+                            <th>Leave Days (Casual)</th>
+                            <th>Leave Days (Vacation)</th>
+                            <th>Leave Days (Other)</th>
+                            <th>Date of First Appointment</th>
+                            <th>Commence Leave Date</th>
+                            <th>Resume Duties Date</th>
+                            <th>Reason for Leave</th>
+                            <th>Applicant Signature</th>
+                            <th>Signature of the Acting Officer</th>
+                            <th>Status</th> {/* Column for status */}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {applications.map((app) => (
+                            <tr key={app._id}>
+                                
+                                <td>{app.name}</td>
+                                <td>{app.designation}</td>
+                                <td>{app.subDesignation}</td>
+                                <td>{app.ministry}</td>
+                                <td>{app.leaveDaysC}</td>
+                                <td>{app.leaveDaysV}</td>
+                                <td>{app.leaveDaysO}</td>
+                                <td>{new Date(app.firstAppointmentDate).toLocaleDateString()}</td>
+                                <td>{new Date(app.commenceLeaveDate).toLocaleDateString()}</td>
+                                <td>{new Date(app.resumeDutiesDate).toLocaleDateString()}</td>
+                                <td>{app.reasonForLeave}</td>
+                                
+                                <td>
+                                  <Image
+                                    src={app.applicantSignature ? `http://localhost:8093/uploads_LeaveApplicant/${app.applicantSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                    alt="Applicant Signature"
+                                    style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '400px', borderRadius: '10%' }}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'; }} // Fallback on error
+                                  />
+
+                                  </td>
+                                  <td>
+                                  <Image
+                                    src={app.officerActingSignature ? `http://localhost:8093/uploads_LeaveApplicant/${app.officerActingSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                    alt="officer Acting Signature"
+                                    style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '400px', borderRadius: '10%' }}
+                                    onError={(e) => { e.target.onerror = null; e.target.src = 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'; }} // Fallback on error
+                                  />
+
+                                  </td>
+                                  <td>{app.isValid ? 'Approved' : 'Rejected'}</td> {/* Displaying status */}
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
             ) : (
-              applications.map((app) => (
-                <tr key={app.id}>
-                  <td>{app.name}</td>
-                  <td>{app.designation}</td>
-                  <td>{new Date(app.submissionDate).toLocaleDateString()}</td>
-                  <td>
-                    {app.approvalLevel === 0 && <Badge bg="secondary">Pending</Badge>}
-                    {app.approvalLevel === 1 && <Badge bg="warning">Level 1 Approved</Badge>}
-                    {app.approvalLevel === 2 && <Badge bg="info">Level 2 Approved</Badge>}
-                    {app.approvalLevel === 3 && <Badge bg="success">Fully Approved</Badge>}
-                  </td>
-                  <td>
-                    {app.approvalLevel < 3 && (
-                      <Button
-                        variant="primary"
-                        onClick={() => handleApprove(app.id, app.approvalLevel + 1)}
-                        disabled={app.approvalLevel === 3}
-                      >
-                        Approve Level {app.approvalLevel + 1}
-                      </Button>
-                    )}
-                    {app.approvalLevel === 3 && <span>Approved by All</span>}
-                  </td>
-                </tr>
-              ))
+                <p className="mt-4">No applications found for the selected date.</p>
             )}
-          </tbody>
-        </Table>
-      )}
-    </Container>
-  );
+        </div>
+    );
 }
+
+export default LeaveApplicationsByDate;
