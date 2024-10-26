@@ -3,10 +3,12 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { config } from "dotenv";
-import multer from 'multer';
-// new code..................
+// import multer from 'multer';
+// // new code..................
 import { fileURLToPath } from 'url';
-import path from 'path';
+//  import fs from 'fs';
+ import path from 'path';
+//  import { format } from 'date-fns'; // Use date-fns to format the date
 // .......................
 
 const app = express();
@@ -14,67 +16,91 @@ config();  // Load environment variables from .env file
 
 // new code..................
 // Define __dirname for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
-
-
-
-
-
+ const __filename = fileURLToPath(import.meta.url);
+ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 8093;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// new new new new new code
+app.use(bodyParser.urlencoded({ extended: true })); // For URL-encoded form data
 // new code..........
-// Serve static files from the uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+//  Serve static files from the uploads directory
+ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-// Serve static files from the uploads_LeaveApplicant directory
+
+ // Serve static files from the uploads_LeaveApplicant directory
 app.use('/uploads_LeaveApplicant', express.static(path.join(__dirname, 'uploads_LeaveApplicant')));
 
-app.use(bodyParser.urlencoded({ extended: true })); // For URL-encoded form data
 
 
 
-// Configure storage for uploads folder
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Specify the folder to store uploaded files
-    },
-    filename: (req, file, cb) => {
-        cb(null,file.originalname); // Name the file
-    }
-});
+
+ // Configure storage for uploads folder
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'uploads/'); // Specify the folder to store uploaded files
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null,file.originalname); // Name the file
+//     }
+// });
 
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Optional: Limit file size (e.g., 10MB)
-});
+// const upload = multer({
+//   storage: storage,
+//   limits: { fileSize: 10 * 1024 * 1024 }, // Optional: Limit file size (e.g., 10MB)
+// });
 
-// Configure storage for uploads_LeaveApplicant folder
-const storage_LeaveApplicant = multer.diskStorage({
-  destination: (req, file, cb) => {
-      cb(null, 'uploads_LeaveApplicant/'); // Specify the folder to store files
-  },
-  filename: (req, file, cb) => {
-      cb(null, file.originalname); // Name the file
-  }
-});
+// // Configure storage for uploads_LeaveApplicant folder
+// const storage_LeaveApplicant = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//       cb(null, 'uploads_LeaveApplicant/'); // Specify the folder to store files
+//   },
+//   filename: async (req, file, cb) => {
+//       const fileName = path.parse(file.originalname).name; // Get file name without extension
+//       const fileExt = path.extname(file.originalname);      // Get file extension
+//       const currentDate = format(new Date(), 'yyyy-MM-dd'); // Get the current date in YYYY-MM-DD format
 
-// Initialize multer for uploads_LeaveApplicant
-const upload_LeaveApplicant = multer({
-  storage: storage_LeaveApplicant,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Optional: limit file size
-});
+//       // Function to check if a file exists and modify the name if it already exists
+//       const getUniqueFileName = async (name, ext, date) => {
+//           let newFileName = `${name}(${date})${ext}`;
+//           let newFilePath = path.join('uploads_LeaveApplicant/', newFileName);
+//           let count = 2;
+
+//           try {
+//               // Use asynchronous fs.promises.access to check for file existence
+//               while (await fs.promises.access(newFilePath).then(() => true).catch(() => false)) {
+//                   newFileName = `${name}(${date})(${count})${ext}`;
+//                   newFilePath = path.join('uploads_LeaveApplicant/', newFileName);
+//                   count++;
+//               }
+//           } catch (err) {
+//               return cb(err);
+//           }
+
+//           return newFileName;
+//       };
+
+//       // Generate a unique file name
+//       try {
+//           const newFileName = await getUniqueFileName(fileName, fileExt, currentDate);
+//           cb(null, newFileName);
+//       } catch (err) {
+//           cb(err);
+//       }
+//   }
+// });
+
+// const upload_LeaveApplicant = multer({
+//   storage: storage_LeaveApplicant,
+//   limits: { fileSize: 10 * 1024 * 1024 }, // Optional: limit file size
+// });
 
 
 const URL = process.env.MONGODB_URL;

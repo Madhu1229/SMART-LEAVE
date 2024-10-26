@@ -4,6 +4,13 @@ import multer from 'multer';
 import path from 'path';
 
 
+// // Define __dirname for ES modules
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+
+// // Serve static files from the uploads directory
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Setup multer for file uploads, saving files to 'uploads' directory
 const storage = multer.diskStorage({
@@ -15,7 +22,11 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+ storage: storage,
+ limits: { fileSize: 10 * 1024 * 1024 }, // Optional: Limit file size (e.g., 10MB)
+});
+
 
 const router = express.Router();
 

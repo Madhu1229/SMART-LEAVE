@@ -5,24 +5,31 @@ const Schema = mongoose.Schema;
 const member_LeaveApplicantSchema = new Schema({
 
     name: { type: String, required: true}, // Use String for file paths or URLs of uploaded files
-    designation: { type: String, required: true },
-    subDesignation: { type: String, required: true },
-    ministry: { type: String, required: true },
-    leaveDaysC: { type: Number, required: true },
+    designation: { type: String, required: true},
+    subDesignation: { type: String , required: true},
+    ministry: { type: String , required: true },
+    leaveDaysC: { type: Number , required: true},
     leaveDaysV: { type: Number, required: true },
-    leaveDaysO: { type: Number, required: true },
-    leaveTakenC: { type: Number, required: true },
-    leaveTakenV: { type: Number, required: true },
-    leaveTakenO: { type: Number, required: true },
-    date: { type: Date, required: true },
-    firstAppointmentDate: { type: Date, required: true },
+    leaveDaysO: { type: Number , required: true},
+    leaveTakenC: { type: Number, required: true},
+    leaveTakenV: { type: Number, required: true},
+    leaveTakenO: { type: Number, required: true},
+    firstAppointmentDate: { type: Date, required: true},
+    commenceLeaveDate:{type:Date, required: true},
     resumeDutiesDate: { type: Date, required: true },
-    reasonForLeave: { type: String, required: true },
-    applicantSignature: { type: String, required: true },
-    officerActingName: { type: String, required: true },
-    officerActingSignature: { type: String,required: true }
+    reasonForLeave: { type: String , required: true},
+    applicantSignature: { type: String,required: true },
+    officerActingName: { type: String, required: true},
+    officerActingSignature: { type: String,required: true },
+    date: { type: Date, required: true},
 
 })
+
+// Create a unique compound index on both 'name' and 'date' fields
+//  member_LeaveApplicantSchema.index({ name: 1, date: 1 }, { unique: true }); 
+
+
+
 
 const Member_LeaveApplicant = mongoose.model('Member_LeaveApplicant',member_LeaveApplicantSchema);
 
