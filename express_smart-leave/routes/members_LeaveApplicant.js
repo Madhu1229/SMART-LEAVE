@@ -110,4 +110,52 @@ router.post("/add", upload_LeaveApplicant.fields([
     }
 });
 
+
+
+// Read all data
+router.get("/", async (req, res) => {
+    try {
+        const members_LeaveApplicant = await Member_LeaveApplicant.find();
+        res.status(200).json(members_LeaveApplicant);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API Endpoint to get leave applications by submission date
+router.get("/getByDate", async (req, res) => {
+    console.log("GET request received at /getByDate");
+    try {
+        const { date } = req.query; // Expecting a query parameter named 'date'
+        if (!date) {
+            return res.status(400).json({ status: "Date parameter is required" });
+        }
+
+        const selectedDate = new Date(date+ 'Z');
+            const startOfDay = new Date(selectedDate.setUTCHours(0, 0, 0, 0));
+            const endOfDay = new Date(selectedDate.setUTCHours(23, 59, 59, 999));
+
+
+
+        const applications = await Member_LeaveApplicant.find({
+            date: {
+                 $gte: startOfDay,
+                 $lt: endOfDay,
+            },
+        });
+
+     // Check if applications were found
+     if (applications.length === 0) {
+        return res.status(200).send({ status: "No leave applications found for the specified date", applications });
+    }
+
+    res.status(200).send({ status: "Leave applications fetched for the date", applications });
+} catch (err) {
+    console.log(err);
+    res.status(500).send({ status: "Error fetching applications", error: err.message });
+}
+});
+
+
 export default router;
