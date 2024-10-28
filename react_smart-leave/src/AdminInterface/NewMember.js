@@ -568,13 +568,13 @@ setErrors((prevErrors) => ({
                       className={`form-control${errors.designation ? 'is-invalid' : ''}`}
                     >
                       <option value="">Select Designation</option>
-                      <option value="commisioned">Commisioned Officers</option>
+                      <option value="Commissioned officers">Commisioned officers</option>
                       <option value="non-commisioned">Non-Commisioned Officers & Enlisted Personnel</option>
                     </Form.Control>
                     {renderErrorMessage('designation')}
                   </td>
                 </tr>
-                {formData.designation === "commisioned" && (
+                {formData.designation === "Commissioned officers" && (
                   <tr>
                     <td><label>Sub Rank</label></td>
                     <td>
@@ -586,7 +586,7 @@ setErrors((prevErrors) => ({
                         className={`form-control${errors.subDesignation ? 'is-invalid' : ''}`}
                       >
                         <option value="">Select Sub Designation</option>
-                        <option value="general">General / Flag Officers</option>
+                        <option value="General / Flag Officers">General / Flag Officers</option>
                         <option value="senior">Senior Officers</option>
                         <option value="junior">Junior Officers</option>
                         <option value="snrNCO">Senior NCOs</option>
