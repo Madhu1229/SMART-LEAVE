@@ -180,8 +180,7 @@ router.get('/matchLeaveApplicants', async (req, res) => {
             };
         });
 
-        // Log matched records
-        console.log("Matched Records:", matchedRecords);
+        
 
         res.json({ matchedRecords });
     } catch (error) {
