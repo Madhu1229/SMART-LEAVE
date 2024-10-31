@@ -9,8 +9,6 @@ import { format } from 'date-fns';
 //matching 2 data collections...
 import Member from "../models/Member.js";
 
-
-
 const router = express.Router();
 
 // Ensure the uploads folder exists
@@ -128,7 +126,7 @@ router.get("/", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-// API Endpoint to get leave applications by submission date
+// API Endpoint to get leave applications by submission date and match with members
 router.get("/getByDate", async (req, res) => {
     console.log("GET request received at /getByDate");
     try {
@@ -136,31 +134,26 @@ router.get("/getByDate", async (req, res) => {
         if (!date) {
             return res.status(400).json({ status: "Date parameter is required" });
         }
-        const selectedDate = new Date(date+ 'Z');
-            const startOfDay = new Date(selectedDate.setUTCHours(0, 0, 0, 0));
-            const endOfDay = new Date(selectedDate.setUTCHours(23, 59, 59, 999));
+
+        // Parse the date and define start and end of the day
+        const selectedDate = new Date(date + 'Z');
+        const startOfDay = new Date(selectedDate.setUTCHours(0, 0, 0, 0));
+        const endOfDay = new Date(selectedDate.setUTCHours(23, 59, 59, 999));
+
+        // Fetch all leave applications within the specified date range
         const applications = await Member_LeaveApplicant.find({
             date: {
-                 $gte: startOfDay,
-                 $lt: endOfDay,
+                $gte: startOfDay,
+                $lt: endOfDay,
             },
         });
-     // Check if applications were found
-     if (applications.length === 0) {
-        return res.status(200).send({ status: "No leave applications found for the specified date", applications });
-    }
-    res.status(200).send({ status: "Leave applications fetched for the date", applications });
-} catch (err) {
-    console.log(err);
-    res.status(500).send({ status: "Error fetching applications", error: err.message });
-}
-});
 
-// Route to get matching records
-router.get('/matchLeaveApplicants', async (req, res) => {
-    try {
-        // Fetch all leave applications and members
-        const leaveApplications = await Member_LeaveApplicant.find();
+        // Check if applications were found
+        if (applications.length === 0) {
+            return res.status(200).send({ status: "No leave applications found for the specified date", applications });
+        }
+
+        // Fetch all members for matching
         const members = await Member.find();
 
         // Create a map of members for quick lookup
@@ -169,26 +162,60 @@ router.get('/matchLeaveApplicants', async (req, res) => {
             memberMap.set(`${member.fullName}|${member.designation}`, member);
         });
 
-        // Find matches based on name and designation
-        const matchedRecords = leaveApplications.map(app => {
+        // Match applications with members and set status
+        const matchedApplications = applications.map(app => {
             const key = `${app.name}|${app.designation}`;
             const member = memberMap.get(key); // O(1) lookup time
+
             return {
                 ...app.toObject(),
                 isValid: !!member, // true if matched, false if not matched
+                status: member ? 'Accepted' : 'Rejected', // Set status based on existence of matching member
                 matchedMember: member || null // Include matched member details if needed
             };
         });
 
-        
-
-        res.json({ matchedRecords });
-    } catch (error) {
-        console.error("Error fetching matching records:", error);
-        res.status(500).json({ message: "Internal server error" });
+        // Return the matched applications
+        res.status(200).send({ status: "Leave applications fetched for the date", applications: matchedApplications });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ status: "Error fetching applications", error: err.message });
     }
 });
 
+
+// // Route to get matching records
+// router.get('/matchLeaveApplicants', async (req, res) => {
+//     try {
+//         // Fetch all leave applications and members
+//         const leaveApplications = await Member_LeaveApplicant.find();
+//         const members = await Member.find();
+
+//         // Create a map of members for quick lookup
+//         const memberMap = new Map();
+//         members.forEach(member => {
+//             memberMap.set(`${member.fullName}|${member.designation}`, member);
+//         });
+
+//         // Find matches based on name and designation
+//         const matchedRecords = leaveApplications.map(app => {
+//             const key = `${app.name}|${app.designation}`;
+//             const member = memberMap.get(key); // O(1) lookup time
+            
+//             return {
+//                 ...app.toObject(),
+//                 isValid: !!member, // true if matched, false if not matched
+//                 status: member ? 'Accepted' : 'Rejected', // Set status based on existence of matching member
+//                 matchedMember: member || null // Include matched member details if needed
+//             };
+//         });
+
+//         res.json({ matchedRecords });
+//     } catch (error) {
+//         console.error("Error fetching matching records:", error);
+//         res.status(500).json({ message: "Internal server error" });
+//     }
+// });
 
 
 

@@ -4,6 +4,8 @@ import { Table, Button, Form, Image, Spinner } from "react-bootstrap";
 
 function LeaveApplicationsByDate() {
     const [date, setDate] = useState("");
+    const [leaveStatus, setLeaveStatus] = useState("All");  // Default to All
+    const [searchQuery, setSearchQuery] = useState(""); // State for search query
     const [applications, setApplications] = useState([]);
     const [membersData, setMembersData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -24,15 +26,28 @@ function LeaveApplicationsByDate() {
         setDate(e.target.value);
     };
 
+    const handleStatusChange = (e) => {
+        setLeaveStatus(e.target.value);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value); // Update search query
+    };
+
     const fetchApplicationsByDate = async () => {
         setIsLoading(true);
         try {
             const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, { params: { date } });
             const leaveApplications = response.data.applications;
 
+            // Map applications to include status based on isValid
             const matchedApplications = leaveApplications.map(app => {
-                const member = membersData.find(member => member.fullName === app.name && member.designation === app.designation);
-                return { ...app, isValid: !!member };
+                const isValid = !!membersData.find(member => member.fullName === app.name && member.designation === app.designation);
+                return { 
+                    ...app, 
+                    status: app.isValid ? "Approved" : "Rejected"  // Assigning status based on isValid
+                    
+                };
             });
 
             setApplications(matchedApplications);
@@ -46,6 +61,14 @@ function LeaveApplicationsByDate() {
 
     const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
 
+    // Filter applications based on selected leaveStatus and search query
+    const filteredApplications = applications.filter(app => {
+        const matchesStatus = leaveStatus === "All" || app.status === leaveStatus;
+        const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              app.designation.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
+    });
+
     return (
         <div className="container mt-5">
             <h2 className="mb-4">View Leave Applications by Date</h2>
@@ -53,11 +76,31 @@ function LeaveApplicationsByDate() {
                 <Form.Label>Select Date:</Form.Label>
                 <Form.Control type="date" value={date} onChange={handleDateChange} />
             </Form.Group>
+
+            <Form.Group controlId="leaveStatus" className="mt-3">
+                <Form.Label>Status:</Form.Label>
+                <Form.Control as="select" value={leaveStatus} onChange={handleStatusChange}>
+                    <option>All</option>
+                    <option>Approved</option>
+                    <option>Rejected</option>
+                </Form.Control>
+            </Form.Group>
+
+            <Form.Group controlId="searchQuery" className="mt-3">
+                <Form.Label>Search:</Form.Label>
+                <Form.Control 
+                    type="text" 
+                    placeholder="Search by name or designation" 
+                    value={searchQuery} 
+                    onChange={handleSearchChange} 
+                />
+            </Form.Group>
+
             <Button className="mt-3" variant="primary" onClick={fetchApplicationsByDate} disabled={isLoading}>
                 {isLoading ? <Spinner animation="border" size="sm" /> : "Fetch Applications"}
             </Button>
 
-            {applications.length > 0 ? (
+            {filteredApplications.length > 0 ? (
                 <Table striped bordered hover responsive className="mt-4">
                     <thead>
                         <tr>
@@ -78,7 +121,7 @@ function LeaveApplicationsByDate() {
                         </tr>
                     </thead>
                     <tbody>
-                        {applications.map(app => (
+                        {filteredApplications.map(app => (
                             <tr key={app._id}>
                                 <td>{app.name}</td>
                                 <td>{app.designation}</td>
@@ -107,13 +150,13 @@ function LeaveApplicationsByDate() {
                                         onError={(e) => { e.target.onerror = null; e.target.src = 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'; }}
                                     />
                                 </td>
-                                <td>{app.isValid ? 'Approved' : 'Rejected'}</td>
+                                <td>{app.status}</td>
                             </tr>
                         ))}
                     </tbody>
                 </Table>
             ) : (
-                <p className="mt-4">No applications found for the selected date.</p>
+                <p className="mt-4">No applications found for the selected date and status.</p>
             )}
         </div>
     );
