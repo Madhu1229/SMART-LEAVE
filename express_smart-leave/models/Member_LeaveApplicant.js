@@ -29,8 +29,6 @@ const member_LeaveApplicantSchema = new Schema({
 //  member_LeaveApplicantSchema.index({ name: 1, date: 1 }, { unique: true }); 
 
 
-
-
 const Member_LeaveApplicant = mongoose.model('Member_LeaveApplicant',member_LeaveApplicantSchema);
 
 export default Member_LeaveApplicant; // Use ES module export
