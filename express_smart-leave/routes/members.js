@@ -44,6 +44,8 @@ router.post("/add", upload.fields([
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).json({ error: 'No files were uploaded.' });
         }
+    
+
 
         // Extract other form data from req.body
         const {

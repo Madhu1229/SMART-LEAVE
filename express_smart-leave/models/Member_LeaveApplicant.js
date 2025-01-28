@@ -22,6 +22,7 @@ const member_LeaveApplicantSchema = new Schema({
     officerActingName: { type: String, required: true},
     officerActingSignature: { type: String,required: true },
     date: { type: Date, required: true},
+    
 
 })
 
