@@ -169,16 +169,16 @@ router.post("/add", upload.fields([
     }
 });
 
-// // Read all data
-// router.get("/", async (req, res) => {
-//     try {
-//         const members = await Member.find();
-//         res.status(200).json(members);
-//     } catch (err) {
-//         console.log(err);
-//         res.status(500).json({ error: err.message });
-//     }
-// });
+// Read all data
+ router.get("/", async (req, res) => {
+     try {
+         const takeActions = await Take_Actions.find();
+            res.status(200).json(takeActions);
+     } catch (err) {
+        console.log(err);
+         res.status(500).json({ error: err.message });
+     }
+ });
 
 // // Update data
 // router.put("/update/:memberID", async (req, res) => {
