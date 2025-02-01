@@ -171,7 +171,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files from various upload directories
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads_LeaveApplicant', express.static(path.join(__dirname, 'uploads_LeaveApplicant')));
-app.use('/uploads_TakeActions', express.static(path.join(__dirname, 'uploads_TakeActions')));
+app.use('/uploads_TakeActions/uploads_TakeActions1', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions1')));
+app.use('/uploads_TakeActions/uploads_TakeActions2', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions2')));
+app.use('/uploads_TakeActions/uploads_TakeActions3', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions3')));
 
 // MongoDB connection
 const URL = process.env.MONGODB_URL;
@@ -189,12 +191,17 @@ connection.once("open", () => {
 // Import routes
 import memberRouter from "./routes/members.js";
 import member_LeaveApplicantRouter from "./routes/members_LeaveApplicant.js";
-import take_actionRouter from "./routes/takeActions.js";
+import take_action1Router from "./routes/takeActions1.js";
+import take_action2Router from "./routes/takeActions2.js";
+import take_action3Router from "./routes/takeActions3.js";
 
 // Use routes in the app
 app.use("/Member", memberRouter);
 app.use("/Member_LeaveApplicant", member_LeaveApplicantRouter);
-app.use("/Take_Actions", take_actionRouter);
+app.use("/Take_Actions1", take_action1Router);
+app.use("/Take_Actions2", take_action2Router);
+app.use("/Take_Actions3", take_action3Router);
+
 
 // Start the server
 app.listen(PORT, () => {

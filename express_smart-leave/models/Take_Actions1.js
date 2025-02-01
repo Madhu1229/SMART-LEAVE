@@ -18,22 +18,21 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
-const takeActionSchema = new Schema({
+const takeAction1Schema = new Schema({
 
 
 
-
+     
      recommendation: { type: String,  required: true },
-     allowedByHead: { type: String, required: true },
-     finalApproval: { type: String, required: true },
+     supervisingOfficerName: { type: String,  required: true },
+     role: { type: String, required:false},
      signature1: { type: String, required: false },
-     signature2: { type: String, required: false },
-     signature3: { type: String, required: false }
+     date1:{ type: String, required: false }
 
     
 
 })
 
-const Take_Actions = mongoose.model('Take_Actions',takeActionSchema);
+const Take_Actions1 = mongoose.model('Take_Actions1',takeAction1Schema);
 
-export default Take_Actions; // Use ES module export
+export default Take_Actions1; // Use ES module export
