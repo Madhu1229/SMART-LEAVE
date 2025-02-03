@@ -142,24 +142,39 @@
 // app.listen(PORT, () => {
 //   console.log(`Server is up and running on port number: ${PORT}`);
 // });
-
+// import { config } from "dotenv";
+import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { config } from "dotenv";
 import { fileURLToPath } from 'url';
 import path from 'path';
+import {googleAuth} from "./google.auth.js";
+import passport from "passport";
+import session from "express-session";
+import { routesInit } from "./routes/google_auth_index.js"; 
+import MongoStore from "connect-mongo";
+import dotenv from "dotenv";
+dotenv.config();
+
+
+const mongoUrl = process.env.MONGODB_URL;
+if (!mongoUrl) {
+  console.error("❌ Error: MongoDB Connection String is not defined!");
+  process.exit(1); // Stop the server
+}
 
 // Initialize express app
 const app = express();
-config();  // Load environment variables from .env file
+// config();  // Load environment variables from .env file
 
 // Define __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 8093;
+
 
 // Middleware
 app.use(cors());
@@ -174,6 +189,50 @@ app.use('/uploads_LeaveApplicant', express.static(path.join(__dirname, 'uploads_
 app.use('/uploads_TakeActions/uploads_TakeActions1', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions1')));
 app.use('/uploads_TakeActions/uploads_TakeActions2', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions2')));
 app.use('/uploads_TakeActions/uploads_TakeActions3', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions3')));
+
+app.use(
+  session({
+    secret:process.env.SESSION_SECRET,
+    resave:false,
+    saveUninitialized:false,
+    store:MongoStore.create({mongoUrl: mongoUrl,
+      collectionName: "sessions",
+      ttl: 14 * 24 * 60 * 60, // Time to live for session
+      }),
+    cookie:{
+      secure:false,
+      expires:new Date(Date.now() + 10000),
+      maxAge:10000
+    }
+  })
+)
+console.log("✅ MongoDB session store initialized successfully!");
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Initialize Google Authentication
+googleAuth(passport);
+
+// Set up Google OAuth routes
+routesInit(app, passport);
+
+// ✅ Serve a simple login page at `/`
+app.get("/", (req, res) => {
+  res.send(`
+    <h2>Welcome to Smart Leave</h2>
+    <a href="/auth/google">
+      <button>Login with Google</button>
+    </a>
+  `);
+});
+
+
+//  app.get("/",(req,res,next)=>{
+//    res.send("<a href = 'http://localhost:8093/auth/google'>Login with Google </a>");
+//    next();
+
+//  }
+//  )
 
 // MongoDB connection
 const URL = process.env.MONGODB_URL;
@@ -194,6 +253,7 @@ import member_LeaveApplicantRouter from "./routes/members_LeaveApplicant.js";
 import take_action1Router from "./routes/takeActions1.js";
 import take_action2Router from "./routes/takeActions2.js";
 import take_action3Router from "./routes/takeActions3.js";
+import auth from "./routes/authRoutes.js"
 
 // Use routes in the app
 app.use("/Member", memberRouter);
@@ -201,9 +261,21 @@ app.use("/Member_LeaveApplicant", member_LeaveApplicantRouter);
 app.use("/Take_Actions1", take_action1Router);
 app.use("/Take_Actions2", take_action2Router);
 app.use("/Take_Actions3", take_action3Router);
+app.use("/auth", auth);
 
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is up and running on port number: ${PORT}`);
+  googleAuth(passport);
+  routesInit(app,passport)
 });
+
+
+
+// GOOGLE_CLIENT_ID :process.env.GOOGLE_CLIENT_ID
+// GOOGLE_CLIENT_SECRET :process.env.GOOGLE_CLIENT_SECRET
+// GOOGLE_REDIRECT_URL :process.env.GOOGLE_REDIRECT_URL
+// SESSION_SECRET : process.env.SESSION_SECRET
+
+

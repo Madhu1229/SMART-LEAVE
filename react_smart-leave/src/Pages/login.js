@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import Axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Login.css';
+import axios from 'axios';
 
 import Footer from './Footer';
 
 import Button from 'react-bootstrap/Button';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 
 
@@ -22,6 +22,10 @@ import Logo from '../Images/Logo.png';
 
 export default function Login() {
 
+  const [email, setEmail] = useState('');  // State for email
+  const [password, setPassword] = useState('');  // State for password
+  const [error, setError] = useState(null);  // State for error handling
+
   const Navigate = useNavigate();
 
   const reloadPage = () => {
@@ -29,30 +33,55 @@ export default function Login() {
   };
 
 
-  const [registerName, setregisterName] = useState('')
-  const [registerUsername, setregisterUsername] = useState('')
-  const [registerEmail, setregisterEmail] = useState('')
-  const [registerPassword, setregisterPassword] = useState('')
-  const [registerRepeatPassword, setregisterRepeatPassword] = useState('')
+  function logout() {
+    // Remove the token from localStorage (or cookies)
+    localStorage.removeItem('token');  // Or use sessionStorage/cookies if preferred
+    console.log('Logged out successfully');
+    // Redirect the user to the login page
+    window.location.href = '/login'; // Redirect to the login page or home page
+  }
 
-  const handleSubmit = (e) =>{
-    e.preventDefault()
-    Axios.post('http://localhost:3000/auth/signin',{
-      registerName,
-      registerUsername,
-      registerEmail,
-      registerPassword,
-      registerRepeatPassword,
 
-    })
-    .then(response =>{
-      console.log(response)
-    })
-    .catch(err =>{
-      console.log(err)
-    })
+  const handleLogin = async (event) => {
+    event.preventDefault();  // Prevent form from submitting normally
+
+    // Create request body
+    const loginData = { email, password };
+    console.log('------');
+    try {
+      // Send POST request to your backend API for login using axios
+      console.log(loginData);
+      const response = await axios.post('http://localhost:8093/auth/login', loginData);
+
+      const result = response.data;
+
+      if (response.status === 200) {
+        // Extract role from the response
+        const { role } = result;
+
+        if (role === 'leaveApplicant') {
+          // If the role is 'leaveApplicant', navigate to /LeaveApply
+          Navigate('/LeaveApply');
+        } else if (role === 'admin1') {
+          // If the role is 'Admin1', navigate to /dashboard
+          Navigate('/DashBoard');
+        } else if (role === 'admin2') {
+          // If the role is 'Admin1', navigate to /dashboard
+          Navigate('/DashBoard');
+        } 
+        else {
+          // If the role is not recognized, show an error or handle it
+          setError('Invalid role. Please contact support.');
+        }
+      } else {
+        // Handle failed login
+        setError(result.message || 'Login failed, please try again');
+      }
+    } catch (error) {
+      // Handle any errors that occur during the axios request
+      setError('An error occurred. Please try again.');
+    }
   };
-
 
 
 
@@ -80,7 +109,6 @@ export default function Login() {
             <div className="col-sm-3">
               <div className="button-container ml-auto"> {/* Pushes buttons to the right */}
                 <Button onClick={reloadPage} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
-                <Button onClick={reloadPage} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign Up</Button>
               </div>
             </div>
 
@@ -154,7 +182,7 @@ export default function Login() {
                         <Button onClick={() => Navigate("/")} variant="btn btn-outline-success" style={{ color: "white", width: "300px" }}>Home</Button>
                         <Button onClick={() => Navigate("../AboutUs")} variant="btn btn-outline-success" style={{ color: "white", width: "300px" }}>About Us</Button>
                         <Button onClick={() => Navigate("../ContactUs")} variant="btn btn-outline-success" style={{ color: "white", width: "300px" }}>Contact Us</Button>
-
+                        <Button onClick={logout} variant="btn btn-outline-success" style={{ color: "red", width: "300px" }}>Log Out</Button>
 
                       </ButtonGroup>
 
@@ -165,11 +193,6 @@ export default function Login() {
 
               </div>
             </div>
-
-
-
-
-
 
 
           </div>
@@ -310,16 +333,6 @@ export default function Login() {
         <div className="col-sm-4 ">
           <div className="form p-1 ">
 
-            {/* <!-- Pills navs --> */}
-            <ul className="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
-              <li className="nav-item" role="presentation">
-                <a className="nav-link active small-btn" id="tab-login" data-bs-toggle="pill" href="#pills-login" role="tab" aria-controls="pills-login" aria-selected="true">Sign In</a>
-              </li>
-              <li className="nav-item" role="presentation">
-                <a className="nav-link small-btn" id="tab-register" data-bs-toggle="pill" href="#pills-register" role="tab" aria-controls="pills-register" aria-selected="false">Sign Up</a>
-              </li>
-            </ul>
-
             {/* <!-- Pills content --> */}
             <div class="tab-content">
               <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
@@ -348,13 +361,25 @@ export default function Login() {
 
                   {/* <!-- Email input --> */}
                   <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="email" id="loginName" class="form-control" />
+                    <input
+                      type="email"
+                      className="form-control"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                    />
                     <label class="form-label " for="loginName">Email or username</label>
                   </div>
 
                   {/* <!-- Password input --> */}
                   <div data-mdb-input-init class="form-outline mb-4 ">
-                    <input type="password" id="loginPassword" class="form-control" />
+                    <input
+                      type="password"
+                      className="form-control"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                    />
                     <label class="form-label" for="loginPassword">Password</label>
                   </div>
 
@@ -376,87 +401,17 @@ export default function Login() {
 
                   </div>
 
+
+                  {/* remove sign in row............................................................................ */}
                   {/* <!-- Submit button --> */}
-                  <button1 onClick={() => Navigate("../LeaveApply")} type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-success bg-opacity-25 btn-block mb-4">Sign In</button1>
-
-                  {/* <!-- Register buttons --> */}
-                  <div class="styled-text fly-in-left">
-                    <p>Not a member? <a href="#!" className='register-link'>Sign Up</a></p>
+                  {/* <button1 onClick={() => Navigate("../LeaveApply")} type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-success bg-opacity-25 btn-block mb-4">Sign In</button1> */}
+                  <div className="row mb-4">
+                    <div className="col-md-6 d-flex justify-content-center">
+                      <button onClick={handleLogin} type="submit" className="btn btn-success w-100">
+                        Sign In
+                      </button>
+                    </div>
                   </div>
-                </form>
-              </div>
-              <div class="tab-pane fade" id="pills-register" role="tabpanel" aria-labelledby="tab-register">
-
-                <form className='sign-up-form' onSubmit={handleSubmit}>
-                  <div class="styled-text fly-in-left mb-3">
-                    <p>Sign up with:</p>
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-facebook-f"></i>
-                    </button>
-
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-google"></i>
-                    </button>
-
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-twitter"></i>
-                    </button>
-
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-github"></i>
-                    </button>
-                  </div>
-
-                  <p class="styled-text fly-in-left">or:</p>
-
-                  {/* <!-- Name input --> */}
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="text" id="registerName" class="form-control"
-                      onChange={(e) => setregisterName(e.target.value)} />
-
-                    <label class="form-label" for="registerName">Name</label>
-                  </div>
-
-                  {/* <!-- Username input --> */}
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="text" id="registerUsername" class="form-control"
-                      onChange={(e) => setregisterUsername(e.target.value)} />
-
-                    <label class="form-label" for="registerUsername">Username</label>
-                  </div>
-
-                  {/* <!-- Email input --> */}
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="email" id="registerEmail" class="form-control"
-                      onChange={(e) => setregisterEmail(e.target.value)} />
-                    <label class="form-label" for="registerEmail">Email</label>
-                  </div>
-
-                  {/* <!-- Password input --> */}
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="password" id="registerPassword" class="form-control"
-                      onChange={(e) => setregisterPassword(e.target.value)} />
-                    <label class="form-label" for="registerPassword">Password</label>
-                  </div>
-
-                  {/* <!-- Repeat Password input --> */}
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <input type="password" id="registerRepeatPassword" class="form-control"
-                      onChange={(e) => setregisterRepeatPassword(e.target.value)} />
-                    <label class="form-label" for="registerRepeatPassword">Repeat password</label>
-                  </div>
-
-                  {/* <!-- Checkbox --> */}
-                  <div class="form-check d-flex justify-content-center mb-4">
-                    <input class="form-check-input me-2 custom-checkbox" type="checkbox" value="" id="registerCheck" checked
-                      aria-describedby="registerCheckHelpText" />
-                    <label class="form-check-label" for="registerCheck">
-                      I have read and agree to the terms
-                    </label>
-                  </div>
-
-                  {/* <!-- Submit button --> */}
-                  <button1 type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-success bg-opacity-50 btn-block mb-3">Sign in</button1>
                 </form>
               </div>
             </div>

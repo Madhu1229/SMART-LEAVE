@@ -27,8 +27,13 @@ const takeAction1Schema = new Schema({
      supervisingOfficerName: { type: String,  required: true },
      role: { type: String, required:false},
      signature1: { type: String, required: false },
-     date1:{ type: String, required: false }
-
+     date1:{ type: String, required: false },
+     status: {
+          type: String,
+          enum: ["Pending", "Approved", "Rejected"], // Define possible status values
+          default: "Pending"  // Default to Pending if not specified
+      }
+     
     
 
 })

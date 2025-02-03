@@ -2,6 +2,7 @@ import express from "express";
 import Member from "../models/Member.js";
 import multer from 'multer';
 import path from 'path';
+import bcrypt from 'bcrypt';
 
 
 // // Define __dirname for ES modules
@@ -31,6 +32,8 @@ const upload = multer({
 const router = express.Router();
 
 // Insert data into the database
+
+
 router.post("/add", upload.fields([
     { name: 'photo', maxCount: 1 },
     { name: 'birthCertificate', maxCount: 1 },
@@ -40,14 +43,10 @@ router.post("/add", upload.fields([
     try {
         console.log(req.files);
 
-        // Add the file upload check here
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).json({ error: 'No files were uploaded.' });
         }
-    
 
-
-        // Extract other form data from req.body
         const {
             fullName,
             street,
@@ -75,14 +74,20 @@ router.post("/add", upload.fields([
             role
         } = req.body;
 
-        // Extract file metadata from req.files
         const { photo, birthCertificate, otherDocument1, otherDocument2 } = req.files;
 
-        // Create a new member with extracted data
+        // Random 4-digit number
+        const rawPassword = fullName.substring(0, 3).toLowerCase() + '1234'; 
+        console.log(rawPassword);
+
+        // ✅ Hash the password before saving
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
         const newMember = new Member({
-            photo: photo ? photo[0].originalname : "", // File name for photo
+            photo: photo ? photo[0].originalname : "",
             fullName,
             address: { street, city, state, zipCode },
+            password: hashedPassword,  // ✅ Store hashed password
             gender,
             birthday: new Date(birthday),
             age: Number(age),
@@ -102,106 +107,21 @@ router.post("/add", upload.fields([
             leaveTaken: Number(leaveTaken),
             leaveRemaining: Number(leaveRemaining),
             role,
-            birthCertificate: birthCertificate ? birthCertificate[0].originalname : "",  // File name for birthCertificate
-            otherDocument1: otherDocument1 ? otherDocument1[0].originalname : "",  // File name for otherDocument1
-            otherDocument2: otherDocument2 ? otherDocument2[0].originalname : ""   // File name for otherDocument2
+            birthCertificate: birthCertificate ? birthCertificate[0].originalname : "",
+            otherDocument1: otherDocument1 ? otherDocument1[0].originalname : "",
+            otherDocument2: otherDocument2 ? otherDocument2[0].originalname : ""
         });
-
-        // Save new member to the database
+        console.log(newMember);
         await newMember.save();
-        res.json("Member Added");
+        
+        // ✅ Send password in response (for the user to note)
+        res.json({ message: "Member Added", generatedPassword: rawPassword });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// Read all data
-router.get("/", async (req, res) => {
-    try {
-        const members = await Member.find();
-        res.status(200).json(members);
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// Update data
-router.put("/update/:memberID", async (req, res) => {
-    try {
-        console.log('Update request received for memberID:', req.params.memberID);
-        const memberID = req.params.memberID;
-        const {
-            photo,
-            fullName,
-            address,
-            gender,
-            birthday,
-            age,
-            email,
-            mobile,
-            telephone,
-            maritalStatus,
-            educationLevel,
-            serviceNo,
-            nic,
-            bloodGroup,
-            designation,
-            subDesignation,
-            ministry,
-            joiningDate,
-            leaveTaken,
-            leaveRemaining,
-            role,
-            birthCertificate,
-            otherDocument1,
-            otherDocument2,
-        } = req.body;
-
-        if (!address) {
-            return res.status(400).json({ error: "Address is required" });
-        }
-        const { street, city, state, zipCode } = address;
-
-        const updateMember = {
-            photo,
-            fullName,
-            address: { street, city, state, zipCode },
-            gender,
-            birthday: new Date(birthday),
-            age: Number(age),
-            email,
-            mobile,
-            telephone,
-            maritalStatus,
-            educationLevel,
-            serviceNo,
-            nic,
-            bloodGroup,
-            memberID,
-            designation,
-            subDesignation,
-            ministry,
-            joiningDate: new Date(joiningDate),
-            leaveTaken: Number(leaveTaken),
-            leaveRemaining: Number(leaveRemaining),
-            role,
-            birthCertificate,
-            otherDocument1,
-            otherDocument2,
-        };
-
-        const updatedMember = await Member.findOneAndUpdate({ memberID }, updateMember, { new: true });
-        if (!updatedMember) {
-            return res.status(404).send({ status: "Member not found" });
-        }
-        res.status(200).send({ status: "Member updated", member: updatedMember });
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ status: "Error updating member", error: err.message });
-    }
-});
 
 // Delete data
 router.delete("/delete/:memberID", async (req, res) => {

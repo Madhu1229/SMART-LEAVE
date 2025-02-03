@@ -215,7 +215,7 @@ useEffect(() => {
 
         const applicationId = selectedApplication._id;
 
-        if (actionStatus[applicationId]?.isCompleted1) return; // Prevent multiple submissions
+        if (actionStatus[applicationId]?.isCompleted2) return; // Prevent multiple submissions
 
         // Check if name and role are valid
         if (!isNameAndRoleValid(headOfDepartmentName, role)) {
@@ -239,8 +239,8 @@ useEffect(() => {
                 ...prevState,
                 [applicationId]: {
                     ...prevState[applicationId],
-                    message1: 'Action 2 was Successfully completed',
-                    isCompleted1: true,
+                    message2: 'Action 2 was Successfully completed',
+                    isCompleted2: true,
                 },
             }));
         } catch (error) {
@@ -279,8 +279,8 @@ const handleSubmit3 = async () => {
             ...prevState,
             [applicationId]: {
                 ...prevState[applicationId],
-                message1: 'Action 3 was Successfully completed',
-                isCompleted1: true,
+                message3: 'Action 3 was Successfully completed',
+                isCompleted3: true,
             },
         }));
     } catch (error) {
