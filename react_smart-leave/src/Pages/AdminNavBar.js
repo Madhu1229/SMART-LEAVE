@@ -36,10 +36,10 @@ export default function NavBar() {
               </div>
 
               <Nav.Link as={Link} to="/" className="customize-btn">Home</Nav.Link>
-              <Nav.Link as={Link} to="/AboutUs" className="customize-btn">About Us</Nav.Link>
-              <Nav.Link as={Link} to="/LeaveProfile" className="customize-btn">Leave Profile</Nav.Link>
-              <Nav.Link as={Link} to="/LeaveApply" className="customize-btn">Apply Leave</Nav.Link>
-              <Nav.Link as={Link} to="/LeaveStatus" className="customize-btn">Leave Status</Nav.Link>
+              <Nav.Link as={Link} to="/DashBoard" className="customize-btn">DashBoard</Nav.Link>
+              <Nav.Link as={Link} to="/NewMember" className="customize-btn">NewMember</Nav.Link>
+              <Nav.Link as={Link} to="/ViewMembers" className="customize-btn">ViewMembers</Nav.Link>
+              <Nav.Link as={Link} to="/LeaveApplicant" className="customize-btn">LeaveApplicant</Nav.Link>
               <Nav.Link as={Link} to="/Notifications" className="customize-btn">Notifications</Nav.Link>
               <Nav.Link as={Link} to="/ContactUs" className="customize-btn">Contact Us</Nav.Link>
             </Nav>

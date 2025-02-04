@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Button, Form, Modal, Spinner, Card, Badge } from "react-bootstrap";
+import Footer from '../Pages/Footer';
 
 function LeaveApplicationsByDate() {
     // State for filters and data
@@ -316,6 +317,8 @@ function LeaveApplicationsByDate() {
                     </Card>
                 ))}
             </div>
+            {/*............................ For Footer................................................ */}
+    <Footer/>
         </div>
     );
 }

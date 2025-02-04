@@ -16,7 +16,17 @@ import Footer from '../Pages/Footer';
 export default function LeaveApplyForm() {
 
 
-  const Navigate = useNavigate();
+  const [logoutMessage, setLogoutMessage] = useState(''); // State for logout message
+    const navigate = useNavigate(); // Create navigate function
+  
+    function logout() {
+      localStorage.removeItem('token');
+      setLogoutMessage('You have been logged out successfully.'); // Set the logout message
+      setTimeout(() => {
+        window.location.href = '/'; // Redirect to the login page after 3 seconds
+      }, 3000); // Delay the redirect for 3 seconds to show the message
+    }
+    
 
   // State for form fields
   const [formData, setFormData] = useState({
@@ -289,8 +299,9 @@ return (
 
           <div className="col-sm-3">
             <div className="button-container ml-auto"> {/* Pushes buttons to the right */}
-              <Button onClick={()=>Navigate("./Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
-              <Button onClick={()=>Navigate("./Login")} variant="obtn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign Up</Button>
+            <Button onClick={()=>navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
+            <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
+            
             </div>
           </div>
       
@@ -306,7 +317,15 @@ return (
 
 
 {/* .............Nav Bar............... */}
-    <NavBar/>     
+    <NavBar/>  
+
+    {/* Log out message............... */}
+      {logoutMessage && (
+  <div className="alert alert-success" role="alert">
+    {logoutMessage}
+  </div>
+)}
+   
 
 {/*. ..................................................................................................... */}
 

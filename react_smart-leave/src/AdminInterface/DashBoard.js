@@ -1,8 +1,34 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Button, Form, Modal, Spinner, Card, Badge } from "react-bootstrap";
+import AdminNavBar from '../Pages/AdminNavBar';
+import Icon1 from '../Images/Icon1.png';
+import Icon2 from '../Images/Icon2.png';
+import Footer from '../Pages/Footer';
+import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+
+import './LoginIcon.css';
+
+
+
+
 
 function LeaveApplicationsByDate() {
+
+
+    const [logoutMessage, setLogoutMessage] = useState(''); // State for logout message
+            const navigate = useNavigate(); // Create navigate function
+          
+            function logout() {
+              localStorage.removeItem('token');
+              setLogoutMessage('You have been logged out successfully.'); // Set the logout message
+              setTimeout(() => {
+                window.location.href = '/'; // Redirect to the login page after 3 seconds
+              }, 3000); // Delay the redirect for 3 seconds to show the message
+            }
+
+
     // State for filters and data
     const [date, setDate] = useState("");
     const [leaveStatus, setLeaveStatus] = useState("All");
@@ -219,7 +245,59 @@ function LeaveApplicationsByDate() {
     };
 
     return (
+
+
+        <div className="container-fluid p-0">
+
+             {/* FOR LOGO */}
+                <div className="row1 mb-0 " >
+            
+                  <div className="col-sm-12 p-0 " style={{ marginRight: '0PX', padding: '0px' }}>
+                     <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
+                          <div className="col-sm-8 ">
+                            <div className="h6">
+                              <div className="contact-info d-flex align-items-center "> {/* Flexbox for contact info */}
+                                <img src={Icon1} className="icon" alt="Web-site link" />
+                                  <span className="email">info@smartLeave.com</span>
+                              </div>
+                            </div>
+                          </div>
+            
+                      <div className="col-sm-3">
+                         <div className="button-container ml-auto"> {/* Pushes buttons to the right */}
+                                <Button onClick={()=>navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
+                                <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
+                                                                    
+                        </div>
+                      </div>
+                  
+                      <div className="col-sm-1" >
+                        <div className="icon-container"> {/* Wrapper for Icon2 */}
+                          <img src={Icon2} className="icon2" alt="Web-site link" />
+                        </div>
+                      </div>
+            
+                    </div>
+                  </div>
+                </div>
+            
+            
+            {/* .............Nav Bar............... */}
+                <AdminNavBar/>     
+        
+                        {/* Log out message............... */}
+                        {logoutMessage && (
+                    <div className="alert alert-success" role="alert">
+                        {logoutMessage}
+                    </div>
+                    )}
+                    
         <div className="container mt-5">
+
+             
+
+
+            
             <h2 className="mb-4">View Leave Applications by Date</h2>
             <Form.Group controlId="date">
                 <Form.Label>Select Date:</Form.Label>
@@ -316,6 +394,11 @@ function LeaveApplicationsByDate() {
                     </Card>
                 ))}
             </div>
+        </div>
+        {/*.......................................................For Footer................................................ */}
+        
+         <Footer/>
+        
         </div>
     );
 }

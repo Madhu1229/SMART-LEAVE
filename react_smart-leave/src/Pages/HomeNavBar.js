@@ -12,7 +12,7 @@ export default function NavBar() {
         expand="lg" 
         className="custom-navbar" 
         variant="dark"
-        style={{ backgroundColor: "#022B23", opacity: "0.9" }} // Background color updated
+        style={{ backgroundColor: "#022B23", opacity: "0.9" }} // Applied styles
       >
         <div className="Container">
           <Navbar.Brand href="#home"></Navbar.Brand>
@@ -35,12 +35,10 @@ export default function NavBar() {
                 </p>
               </div>
 
+              {/* Navigation Links */}
               <Nav.Link as={Link} to="/" className="customize-btn">Home</Nav.Link>
               <Nav.Link as={Link} to="/AboutUs" className="customize-btn">About Us</Nav.Link>
-              <Nav.Link as={Link} to="/LeaveProfile" className="customize-btn">Leave Profile</Nav.Link>
-              <Nav.Link as={Link} to="/LeaveApply" className="customize-btn">Apply Leave</Nav.Link>
-              <Nav.Link as={Link} to="/LeaveStatus" className="customize-btn">Leave Status</Nav.Link>
-              <Nav.Link as={Link} to="/Notifications" className="customize-btn">Notifications</Nav.Link>
+              <Nav.Link as={Link} to="/Notices" className="customize-btn">Notices</Nav.Link>
               <Nav.Link as={Link} to="/ContactUs" className="customize-btn">Contact Us</Nav.Link>
             </Nav>
           </Navbar.Collapse>

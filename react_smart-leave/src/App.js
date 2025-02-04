@@ -10,7 +10,7 @@ import ContactUs from './Pages/ContactUs';
 import LeaveApply from './LeaveApplyInterface/LeaveApply';
 import LeaveProfile from './LeaveApplyInterface/LeaveProfile';
 import LeaveStatus from './LeaveApplyInterface/LeaveStatus';
-import Notifications from './LeaveApplyInterface/Notifications';
+import Notices from './Pages/Notices';
 import NavBar from './Pages/NavBar';
 import Footer from './Pages/Footer';
 import DashBoard from './AdminInterface/DashBoard';
@@ -36,7 +36,7 @@ function App() {
       <Route path="/LeaveApply" element={<LeaveApply />}/>
       <Route path="/LeaveProfile" element={<LeaveProfile />}/>
       <Route path="/LeaveStatus" element={<LeaveStatus />}/>
-      <Route path="/Notifications" element={<Notifications />}/>
+      <Route path="/Notices" element={<Notices />}/>
       <Route path="/NavBar" element={<NavBar />}/>
       <Route path="/Footer" element={<Footer />}/>
       <Route path="/DashBoard" element={<DashBoard />}/>

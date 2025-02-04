@@ -305,7 +305,7 @@
 
 /* Style for checkbox tick mark */
 .custom-checkbox:checked {
-  background-color: rgba(40, 167, 69, 0.5);
+  background-color: rgba(13, 13, 13, 0.5);
   border-color: rgba(40, 167, 69, 0.5);
 }
 
@@ -317,7 +317,7 @@
 
 /* Optional: Change color when hovering over the "Forgot password?" link */
 .forgot-password-link:hover {
-  color: rgba(40, 167, 69, 0.8);
+  color: rgba(9, 28, 13, 0.8);
 }
 
 /* Style for the Register link */
@@ -355,3 +355,10 @@
 
 
 /* .gx-* classes, vertical gutters with .gy-*, or all gutters with .g-* classes. .g-0 is also available to remove gutters. */
+
+
+.large-text {
+  text-rendering: optimizeLegibility; /* Helps with text clarity */
+  -webkit-font-smoothing: antialiased; /* Smooths fonts in Webkit browsers (Chrome, Safari) */
+  -moz-osx-font-smoothing: grayscale; /* Helps with font rendering on macOS Firefox */
+}

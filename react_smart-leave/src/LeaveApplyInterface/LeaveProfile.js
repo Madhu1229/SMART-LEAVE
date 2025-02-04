@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Table, Alert } from 'react-bootstrap';
 import axios from 'axios';
+import Footer from '../Pages/Footer';
 
 const Dashboard = () => {
   const [leaveBalance, setLeaveBalance] = useState({});
@@ -119,6 +120,8 @@ const Dashboard = () => {
           </Card>
         </Col>
       </Row>
+      {/*............................ For Footer................................................ */}
+    <Footer/>
     </Container>
   );
 };

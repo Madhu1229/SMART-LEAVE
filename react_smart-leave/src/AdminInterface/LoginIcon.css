@@ -1,0 +1,29 @@
+
+/* Default position for larger screens */
+#root > div > div > div.row1.mb-0 > div.col-sm-12.p-0 > div > div.col-sm-3 > div > button {
+    position: relative;
+    left: 6cm;
+  }
+  
+  /* Adjust for tablets */
+  @media (max-width: 1024px) {
+    #root > div > div > div.row1.mb-0 > div.col-sm-12.p-0 > div > div.col-sm-3 > div > button {
+        left: 1.0; /* Reduce the shift for tablets */
+    }
+  }
+  
+  /* Adjust for mobile screens */
+  @media (max-width: 768px) {
+    #root > div > div > div.row1.mb-0 > div.col-sm-12.p-0 > div > div.col-sm-3 > div > button {
+        left: 0.5cm; /* Minimal shift for small screens */
+    }
+  }
+  
+  /* Adjust for very small screens (e.g., smartphones) */
+  @media (max-width: 480px) {
+    #root > div > div > div.row1.mb-0 > div.col-sm-12.p-0 > div > div.col-sm-3 > div > button {
+        left: 0; /* Reset position for small screens */
+        text-align: center; /* Center if needed */
+    }
+  }
+  

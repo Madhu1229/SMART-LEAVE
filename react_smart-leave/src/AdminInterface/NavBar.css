@@ -1,0 +1,107 @@
+/* Navbar Styles */
+.custom-navbar {
+    background-color: #3e4551; /* Dark background */
+    height: 100%;
+}
+
+.navbar-nav .nav-link-custom {
+    color: white; /* Default link color */
+    font-weight: bold;
+    margin-right: 0;
+}
+
+ 
+
+.navbar-nav .active .nav-link-custom {
+    color: #f77f00; /* Active link color */
+}
+
+.customize-btn {
+    background-color:0;
+    color: white;
+    border-radius: 5px;
+    padding: 20px 15px;
+}
+
+.customize-btn:hover {
+    background-color: black; /* Darken on hover */
+    border-top: 15px solid yellow;
+}
+
+
+  .customize-btn.active {
+    background-color: black; /* Apply when active */
+    border-top: 15px solid green;
+  }
+
+
+/* Logo customization */
+.navbar-brand .logo {
+    width: 150px; /* Adjust logo size */
+}
+
+/* Responsive behavior */
+@media (max-width: 991px) {
+    .navbar-nav {
+        text-align: center;
+    }
+
+    .nav-link-custom {
+        margin-right: 0;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border-color: green;
+    }
+}
+
+
+/* ............................................................................................................................................................... */
+
+
+.custom-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Align everything to the left */
+  justify-content: center;
+  text-align: center; /* Center the text below each other */
+  padding-left: 30px; /* Adjust this value to move the content left */
+  width: 100%;
+}
+
+.fixed-logo {
+  max-width: 100px; /* Adjust logo size */
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.sentence1 {
+  color: green;
+  font-weight: 100;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.sentence2 {
+  color: #ff5722;
+  font-weight: 100;
+  text-decoration: overline;
+  font-size: 12px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

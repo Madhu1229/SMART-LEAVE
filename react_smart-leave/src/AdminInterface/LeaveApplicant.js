@@ -1,8 +1,30 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Table, Button, Form, Modal, Image, Spinner } from "react-bootstrap";
+import './LoginIcon.css';
+import AdminNavBar from '../Pages/AdminNavBar';
+import Icon1 from '../Images/Icon1.png';
+import Icon2 from '../Images/Icon2.png';
+import Footer from '../Pages/Footer';
+import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+
+
 
 function LeaveApplicationsByDate() {
+
+
+    const [logoutMessage, setLogoutMessage] = useState(''); // State for logout message
+        const navigate = useNavigate(); // Create navigate function
+      
+        function logout() {
+          localStorage.removeItem('token');
+          setLogoutMessage('You have been logged out successfully.'); // Set the logout message
+          setTimeout(() => {
+            window.location.href = '/'; // Redirect to the login page after 3 seconds
+          }, 3000); // Delay the redirect for 3 seconds to show the message
+        }
+        
     // State for filters and data
     const [date, setDate] = useState("");
     const [leaveStatus, setLeaveStatus] = useState("All");
@@ -133,10 +155,10 @@ useEffect(() => {
 
     // Handle viewing details of an application
     const handleViewDetails = (application) => {
+        console.log("Selected Application:", application); // Debugging
         setSelectedApplication(application);
         setShowDetailsModal(true);
     };
-
     // Handle closing an application
     const handleCloseApplication = (applicationId) => {
         alert(`Application with ID: ${applicationId} has been successfully closed.`);
@@ -240,7 +262,7 @@ useEffect(() => {
                 [applicationId]: {
                     ...prevState[applicationId],
                     message2: 'Action 2 was Successfully completed',
-                    isCompleted2: true,
+                    isCompleted1: true,
                 },
             }));
         } catch (error) {
@@ -355,6 +377,56 @@ const handleSubmit3 = async () => {
     };
 
     return (
+
+        
+                <div className="container-fluid p-0">
+        
+                     {/* FOR LOGO */}
+                        <div className="row1 mb-0 " >
+                    
+                          <div className="col-sm-12 p-0 " style={{ marginRight: '0PX', padding: '0px' }}>
+                             <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
+                                  <div className="col-sm-8 ">
+                                    <div className="h6">
+                                      <div className="contact-info d-flex align-items-center "> {/* Flexbox for contact info */}
+                                        <img src={Icon1} className="icon" alt="Web-site link" />
+                                          <span className="email">info@smartLeave.com</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                    
+                              <div className="col-sm-3">
+                                <div className="button-container ml-auto"> {/* Pushes buttons to the right */}
+                                            <Button onClick={()=>navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
+                                            <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
+                                            
+                                            </div>
+                              </div>
+                          
+                              <div className="col-sm-1" >
+                                <div className="icon-container"> {/* Wrapper for Icon2 */}
+                                  <img src={Icon2} className="icon2" alt="Web-site link" />
+                                </div>
+                              </div>
+                    
+                            </div>
+                          </div>
+                        </div>
+                    
+                    
+                    {/* .............Nav Bar............... */}
+                        <AdminNavBar/>     
+                
+                    
+                        {/* Log out message............... */}
+                        {logoutMessage && (
+                    <div className="alert alert-success" role="alert">
+                        {logoutMessage}
+                    </div>
+                    )}
+
+
+
         <div className="container mt-5">
             <h2 className="mb-4">View Leave Applications by Date</h2>
             <Form.Group controlId="date">
@@ -467,6 +539,97 @@ const handleSubmit3 = async () => {
             ) : (
                 <p className="mt-4">No applications found for the selected date and status.</p>
             )}
+
+
+            {/* View Details Modal */}
+            <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Application Details</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {selectedApplication ? (
+                        <Table striped bordered hover responsive>
+                            <tbody>
+                                <tr>
+                                    <th>Name</th>
+                                    <td>{selectedApplication.name}</td>
+                                </tr>
+                                <tr>
+                                    <th>Designation</th>
+                                    <td>{selectedApplication.designation}</td>
+                                </tr>
+                                <tr>
+                                    <th>Sub Designation</th>
+                                    <td>{selectedApplication.subDesignation}</td>
+                                </tr>
+                                <tr>
+                                    <th>Ministry</th>
+                                    <td>{selectedApplication.ministry}</td>
+                                </tr>
+                                <tr>
+                                    <th>Leave Days (Casual)</th>
+                                    <td>{selectedApplication.leaveDaysC}</td>
+                                </tr>
+                                <tr>
+                                    <th>Leave Days (Vacation)</th>
+                                    <td>{selectedApplication.leaveDaysV}</td>
+                                </tr>
+                                <tr>
+                                    <th>Leave Days (Other)</th>
+                                    <td>{selectedApplication.leaveDaysO}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date of First Appointment</th>
+                                    <td>{formatDate(selectedApplication.firstAppointmentDate)}</td>
+                                </tr>
+                                <tr>
+                                    <th>Commence Leave Date</th>
+                                    <td>{formatDate(selectedApplication.commenceLeaveDate)}</td>
+                                </tr>
+                                <tr>
+                                    <th>Resume Duties Date</th>
+                                    <td>{formatDate(selectedApplication.resumeDutiesDate)}</td>
+                                </tr>
+                                <tr>
+                                    <th>Reason for Leave</th>
+                                    <td>{selectedApplication.reasonForLeave}</td>
+                                </tr>
+                                <tr>
+                                    <th>Applicant Signature</th>
+                                    <td>
+                                        <Image
+                                            src={selectedApplication.applicantSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.applicantSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                            alt="Applicant Signature"
+                                            style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Signature of the Acting Officer</th>
+                                    <td>
+                                        <Image
+                                            src={selectedApplication.officerActingSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.officerActingSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                            alt="Officer Acting Signature"
+                                            style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>{selectedApplication.status}</td>
+                                </tr>
+                            </tbody>
+                        </Table>
+                    ) : (
+                        <p>No details available.</p>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
             {/* Action Modals 1*/}
             <Modal show={showActionModal1} onHide={() => { setShowActionModal1(false); resetForm(); }} centered>
@@ -643,6 +806,11 @@ const handleSubmit3 = async () => {
             </Modal>
 
            
+        </div>
+        {/*.......................................................For Footer................................................ */}
+        
+         <Footer/>
+        
         </div>
     );
 }

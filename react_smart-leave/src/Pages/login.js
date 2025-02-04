@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Login.css';
+import './LoginIcon.css';
 import axios from 'axios';
 
 import Footer from './Footer';
@@ -20,13 +21,15 @@ import Icon1 from '../Images/Icon1.png';
 import Icon2 from '../Images/Icon2.png';
 import Logo from '../Images/Logo.png';
 
+
+
 export default function Login() {
 
   const [email, setEmail] = useState('');  // State for email
   const [password, setPassword] = useState('');  // State for password
   const [error, setError] = useState(null);  // State for error handling
-
-  const Navigate = useNavigate();
+  const [logoutMessage, setLogoutMessage] = useState(''); // State for logout message
+  const navigate = useNavigate();
 
   const reloadPage = () => {
     window.location.reload();  // Reloads the current page
@@ -34,11 +37,11 @@ export default function Login() {
 
 
   function logout() {
-    // Remove the token from localStorage (or cookies)
-    localStorage.removeItem('token');  // Or use sessionStorage/cookies if preferred
-    console.log('Logged out successfully');
-    // Redirect the user to the login page
-    window.location.href = '/login'; // Redirect to the login page or home page
+    localStorage.removeItem('token');
+    setLogoutMessage('You have been logged out successfully.'); // Set the logout message
+    setTimeout(() => {
+      window.location.href = '/'; // Redirect to the login page after 3 seconds
+    }, 3000); // Delay the redirect for 3 seconds to show the message
   }
 
 
@@ -61,13 +64,13 @@ export default function Login() {
 
         if (role === 'leaveApplicant') {
           // If the role is 'leaveApplicant', navigate to /LeaveApply
-          Navigate('/LeaveApply');
+          navigate('/LeaveApply');
         } else if (role === 'admin1') {
           // If the role is 'Admin1', navigate to /dashboard
-          Navigate('/DashBoard');
+          navigate('/DashBoard');
         } else if (role === 'admin2') {
           // If the role is 'Admin1', navigate to /dashboard
-          Navigate('/DashBoard');
+          navigate('/DashBoard');
         } 
         else {
           // If the role is not recognized, show an error or handle it
@@ -109,6 +112,7 @@ export default function Login() {
             <div className="col-sm-3">
               <div className="button-container ml-auto"> {/* Pushes buttons to the right */}
                 <Button onClick={reloadPage} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
+                <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
               </div>
             </div>
 
@@ -125,81 +129,84 @@ export default function Login() {
 
 
         {/* ................... */}
-        <div className="row " >
-          <div className="col-sm-12" style={{ marginTop: "-8px", padding: "0", marginLeft: "0" }}>
-            <div className="p-1 mb-2 bg-success   bg-opacity-75  align-items-center justify-content-between">
-              <div className="row " style={{ marginRight: "0" }}>
-                <div className="col-sm-2">
-                  <img src={Logo} className="fixed-logo img-fluid" alt="SL Army Logo" />
+        <div className="row">
+  <div className="col-sm-12" style={{ marginTop: "-8px", padding: "0", marginLeft: "0" }}>
+    <div className="p-1 mb-2 align-items-center justify-content-between" style={{ backgroundColor: "#022B23", opacity: "0.9" }}>
+      <div className="row" style={{ marginRight: "0" }}>
+        <div className="col-sm-2">
+          <img src={Logo} className="fixed-logo img-fluid" alt="SL Army Logo" />
+        </div>
 
-                </div>
-
-                <div className="col-sm-9" >
-                  <div className="animated-text-container">
-                    <br />
-                    <h1 className="display-1 large-text">WELCOME TO SMART - LEAVE</h1>
-
-
-
-
-                    <p className="sentence1" style={{ color: "#3e4551", fontWeight: "700", animation: "flyIn 2s ease-in-out", fontSize: "25px" }}>
-                      SRI LANKA ARMY
-                    </p>
-
-                    <p className="sentence2" style={{ color: "#ff5722", fontWeight: "60px", textDecorationLine: "overline", animation: "flyIn 3s ease-in-out", fontSize: "20px" }}>
-                      Defender of the Nature
-                    </p>
+        <div className="col-sm-9">
+          <div className="animated-text-container">
+            <br />
+            <h1 className="display-1 large-text" 
+    style={{
+        background: "linear-gradient(to right, red, gold)",
+        WebkitBackgroundClip: "text", // for Chrome, Safari, and Opera
+        color: "transparent" // Makes the text color transparent to show the gradient
+    }}>
+  WELCOME TO SMART - LEAVE
+</h1>
 
 
+            <p className="sentence1" style={{ color: "#d1d1d1", fontWeight: "700", animation: "flyIn 2s ease-in-out", fontSize: "25px" }}>
+              SRI LANKA ARMY
+            </p>
 
-                  </div>
-
-                </div>
-
-                {/* ................................Nav Bar........................... */}
-
-                <div className="col-sm-1">
-
-                  <button class="btn btn-success custom-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight" style={{ width: "40px", height: "40px", marginRight: "0" }}>
-                    <div className="custom-icon">
-                      <div className="line"> </div>
-                      <div className="line"> </div>
-                      <div className="line"> </div>
-                    </div>
-                  </button>
-
-
-
-
-                  <div class="offcanvas offcanvas-end ustom-offcanvas" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-                    <div class="offcanvas-header" >
-                      <h5 id="offcanvasRightLabel" style={{ color: "white" }}>Welcome to Smart Leave!</h5>
-                      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                    </div>
-                    <div class="offcanvas-body" >
-
-                      <ButtonGroup vertical >
-                        <Button onClick={() => Navigate("/")} variant="btn btn-outline-success" style={{ color: "white", width: "300px" }}>Home</Button>
-                        <Button onClick={() => Navigate("../AboutUs")} variant="btn btn-outline-success" style={{ color: "white", width: "300px" }}>About Us</Button>
-                        <Button onClick={() => Navigate("../ContactUs")} variant="btn btn-outline-success" style={{ color: "white", width: "300px" }}>Contact Us</Button>
-                        <Button onClick={logout} variant="btn btn-outline-success" style={{ color: "red", width: "300px" }}>Log Out</Button>
-
-                      </ButtonGroup>
-
-                    </div>
-                  </div>
-                </div>
-
-
-              </div>
-            </div>
-
-
+            <p className="sentence2" style={{ color: "#ff5722", fontWeight: "60px", textDecorationLine: "overline", animation: "flyIn 3s ease-in-out", fontSize: "20px" }}>
+              Defender of the Nature
+            </p>
           </div>
         </div>
+
+        {/* Nav Bar */}
+        <div className="col-sm-1">
+          <button className="btn custom-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
+            style={{ width: "40px", height: "40px", marginRight: "0", backgroundColor: "#064635", border: "none" }}>
+            <div className="custom-icon">
+              <div className="line"></div>
+              <div className="line"></div>
+              <div className="line"></div>
+            </div>
+          </button>
+
+          <div className="offcanvas offcanvas-end custom-offcanvas" tabIndex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel"
+            style={{ backgroundColor: "#022B23", color: "white" }}>
+            <div className="offcanvas-header">
+              <h5 id="offcanvasRightLabel">Welcome to Smart Leave!</h5>
+              <button type="button" className="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div className="offcanvas-body">
+              <ButtonGroup vertical>
+                <Button onClick={() => navigate("/")} variant="btn btn-outline-light" style={{ color: "white", width: "300px" }}>Home</Button>
+                <Button onClick={() => navigate("../AboutUs")} variant="btn btn-outline-light" style={{ color: "white", width: "300px" }}>About Us</Button>
+                <Button onClick={() => navigate("../ContactUs")} variant="btn btn-outline-light" style={{ color: "white", width: "300px" }}>Contact Us</Button>
+              </ButtonGroup>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+        
       </div>
 
 
+      {logoutMessage && (
+  <div className="alert alert-success" role="alert">
+    {logoutMessage}
+  </div>
+)}
 
 
       {/* ..................................................................................................... */}
@@ -330,96 +337,191 @@ export default function Login() {
 
         {/* ......................................................................................................................................................................................................... */}
         {/* FOR FORM */}
-        <div className="col-sm-4 ">
-          <div className="form p-1 ">
+        <div className="col-sm-4 d-flex justify-content-center">
+  <div className="form p-1" style={{
+    background: "linear-gradient(to right, #2F4F4F, red)", // Greenish-black to red gradient background
+    borderRadius: '15px', // Rounded corners for the form
+    padding: '30px', // Add padding for better spacing
+    width: '100%', // Ensure form fits the column
+    border: '2px solid #2F4F4F', // Greenish-black border color (dark slate gray)
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', // Soft shadow to make it pop
+    backdropFilter: 'blur(8px)', // Apply blur effect to the form (you can adjust the blur level)
+    backgroundColor: 'rgba(255, 255, 255, 0.3)', // Semi-transparent background for blur effect
+  }}>
+    {/* Pills content */}
+    <div className="tab-content">
+      <div className="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
+        <form>
+          <div className="styled-text fly-in-left mb-3">
+            <p
+              style={{
+                color: "black", // Text color set to black for the label
+              }}
+            >
+              Sign in with:
+            </p>
 
-            {/* <!-- Pills content --> */}
-            <div class="tab-content">
-              <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
-                <form>
-                  <div class="styled-text fly-in-left mb-3">
-                    <p>Sign in with:</p>
+            <button
+              type="button"
+              data-mdb-button-init
+              data-mdb-ripple-init
+              className="btn btn-link btn-floating mx-1"
+              style={{
+                color: "black", // Text color for the icons
+              }}
+            >
+              <i className="fab fa-facebook-f"></i>
+            </button>
 
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init className="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-facebook-f"></i>
-                    </button>
+            <button
+              type="button"
+              data-mdb-button-init
+              data-mdb-ripple-init
+              className="btn btn-link btn-floating mx-1"
+              style={{
+                color: "black", // Text color for the icons
+              }}
+            >
+              <i className="fab fa-google"></i>
+            </button>
 
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init className="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-google"></i>
-                    </button>
+            <button
+              type="button"
+              data-mdb-button-init
+              data-mdb-ripple-init
+              className="btn btn-link btn-floating mx-1"
+              style={{
+                color: "black", // Text color for the icons
+              }}
+            >
+              <i className="fab fa-twitter"></i>
+            </button>
 
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init className="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-twitter"></i>
-                    </button>
-
-                    <button type="button" data-mdb-button-init data-mdb-ripple-init className="btn btn-link btn-floating mx-1">
-                      <i class="fab fa-github"></i>
-                    </button>
-                  </div>
-
-                  <p class="styled-text fly-in-left">or:</p>
-
-                  {/* <!-- Email input --> */}
-                  <div data-mdb-input-init class="form-outline mb-4">
-                    <input
-                      type="email"
-                      className="form-control"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                    />
-                    <label class="form-label " for="loginName">Email or username</label>
-                  </div>
-
-                  {/* <!-- Password input --> */}
-                  <div data-mdb-input-init class="form-outline mb-4 ">
-                    <input
-                      type="password"
-                      className="form-control"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
-                    />
-                    <label class="form-label" for="loginPassword">Password</label>
-                  </div>
-
-                  {/* <!-- 2 column grid layout --> */}
-                  <div class="row mb-4">
-
-                    <div class="col-md-6 d-flex justify-content-center">
-                      {/* <!-- Checkbox --> */}
-                      <div class="form-check mb-3 mb-md-0">
-                        <input class="form-check-input custom-checkbox" type="checkbox" value="" id="loginCheck" checked />
-                        <label class="form-check-label" for="loginCheck"> Remember me </label>
-                      </div>
-                    </div>
-
-                    <div class="col-md-6 d-flex justify-content-center">
-                      {/* <!-- Simple link --> */}
-                      <a href="#!" class="forgot-password-link">Forgot password?</a>
-                    </div>
-
-                  </div>
-
-
-                  {/* remove sign in row............................................................................ */}
-                  {/* <!-- Submit button --> */}
-                  {/* <button1 onClick={() => Navigate("../LeaveApply")} type="submit" data-mdb-button-init data-mdb-ripple-init class="btn btn-success bg-opacity-25 btn-block mb-4">Sign In</button1> */}
-                  <div className="row mb-4">
-                    <div className="col-md-6 d-flex justify-content-center">
-                      <button onClick={handleLogin} type="submit" className="btn btn-success w-100">
-                        Sign In
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-            {/* <!-- Pills content --> */}
+            <button
+              type="button"
+              data-mdb-button-init
+              data-mdb-ripple-init
+              className="btn btn-link btn-floating mx-1"
+              style={{
+                color: "black", // Text color for the icons
+              }}
+            >
+              <i className="fab fa-github"></i>
+            </button>
           </div>
 
+          <p
+            className="styled-text fly-in-left"
+            style={{
+              color: "black", // Text color set to black for this label
+            }}
+          >
+            or:
+          </p>
 
-        </div>
+          {/* Email input */}
+          <div data-mdb-input-init className="form-outline mb-4">
+            <input
+              type="email"
+              className="form-control"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+            <label
+              className="form-label"
+              htmlFor="loginName"
+              style={{
+                color: "black", // Text color set to black for this label
+              }}
+            >
+              Email or username
+            </label>
+          </div>
+
+          {/* Password input */}
+          <div data-mdb-input-init className="form-outline mb-4 ">
+            <input
+              type="password"
+              className="form-control"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
+            <label
+              className="form-label"
+              htmlFor="loginPassword"
+              style={{
+                color: "black", // Text color set to black for this label
+              }}
+            >
+              Password
+            </label>
+          </div>
+
+          {/* 2 column grid layout */}
+          <div className="row mb-4">
+            <div className="col-md-6 d-flex justify-content-center">
+              {/* Checkbox */}
+              <div className="form-check mb-3 mb-md-0">
+                <input
+                  className="form-check-input custom-checkbox"
+                  type="checkbox"
+                  value=""
+                  id="loginCheck"
+                  checked
+                />
+                <label
+                  className="form-check-label"
+                  htmlFor="loginCheck"
+                  style={{
+                    color: "black", // Text color set to black for the label
+                  }}
+                >
+                  Remember me
+                </label>
+              </div>
+            </div>
+
+            <div className="col-md-6 d-flex justify-content-center">
+              {/* Simple link */}
+              <a
+                href="#!"
+                className="forgot-password-link"
+                style={{
+                  color: "black", // Text color set to black for the link
+                }}
+              >
+                Forgot password?
+              </a>
+            </div>
+          </div>
+
+          {/* Submit button */}
+          <div className="row mb-4">
+            <div className="col-md-12 d-flex justify-content-center">
+              <button
+                onClick={handleLogin}
+                type="submit"
+                className="btn w-50"
+                style={{
+                  backgroundColor: "#2F4F4F", // Greenish-black background for the Sign In button
+                  color: "white", // Text color for the button set to white
+                  borderRadius: "25px", // Rounded corners for the button
+                }}
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </form>
+        {/* Form end */}
+      </div>
+    </div>
+    {/* Pills content */}
+  </div>
+</div>
+
       </div>
 
 
