@@ -86,6 +86,10 @@ export default function Login() {
     }
   };
 
+  const handleLoginGoogle = () => {
+    window.location.href = "http://localhost:8093/auth/google"; // Redirect to backend
+  };
+
 
 
 
@@ -160,7 +164,7 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Nav Bar */}
+        {/* Nav Bar
         <div className="col-sm-1">
           <button className="btn custom-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
             style={{ width: "40px", height: "40px", marginRight: "0", backgroundColor: "#064635", border: "none" }}>
@@ -185,7 +189,7 @@ export default function Login() {
               </ButtonGroup>
             </div>
           </div>
-        </div>
+        </div> */}
 
       </div>
     </div>
@@ -338,16 +342,18 @@ export default function Login() {
         {/* ......................................................................................................................................................................................................... */}
         {/* FOR FORM */}
         <div className="col-sm-4 d-flex justify-content-center">
+
   <div className="form p-1" style={{
-    background: "linear-gradient(to right, #2F4F4F, red)", // Greenish-black to red gradient background
-    borderRadius: '15px', // Rounded corners for the form
-    padding: '30px', // Add padding for better spacing
-    width: '100%', // Ensure form fits the column
-    border: '2px solid #2F4F4F', // Greenish-black border color (dark slate gray)
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', // Soft shadow to make it pop
-    backdropFilter: 'blur(8px)', // Apply blur effect to the form (you can adjust the blur level)
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // Semi-transparent background for blur effect
+    backgroundColor: "rgba(47, 79, 79, 0.7)", // Greenish-black with transparency
+    borderRadius: '15px', 
+    padding: '30px', 
+    width: '100%', 
+    border: '2px solid #2F4F4F', 
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+    backdropFilter: 'blur(10px)', // Apply blur effect
+    WebkitBackdropFilter: 'blur(10px)', // Safari support
   }}>
+
     {/* Pills content */}
     <div className="tab-content">
       <div className="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
@@ -361,53 +367,37 @@ export default function Login() {
               Sign in with:
             </p>
 
-            <button
-              type="button"
-              data-mdb-button-init
-              data-mdb-ripple-init
-              className="btn btn-link btn-floating mx-1"
-              style={{
-                color: "black", // Text color for the icons
-              }}
-            >
-              <i className="fab fa-facebook-f"></i>
-            </button>
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "10px" }}>
+  <button
+    onClick={handleLoginGoogle}
+    type="button"
+    className="btn btn-light"
+    style={{
+      width: "250px",
+      height: "50px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "10px",
+      fontSize: "18px",
+      fontWeight: "bold",
+      border: "1px solid #ddd",
+      borderRadius: "25px",
+      boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+      cursor: "pointer",
+    }}
+  >
+    <img 
+      src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+      alt="Google Logo" 
+      style={{ width: "24px", height: "24px" }} 
+    />
+    Sign in with Google
+  </button>
+</div>
 
-            <button
-              type="button"
-              data-mdb-button-init
-              data-mdb-ripple-init
-              className="btn btn-link btn-floating mx-1"
-              style={{
-                color: "black", // Text color for the icons
-              }}
-            >
-              <i className="fab fa-google"></i>
-            </button>
 
-            <button
-              type="button"
-              data-mdb-button-init
-              data-mdb-ripple-init
-              className="btn btn-link btn-floating mx-1"
-              style={{
-                color: "black", // Text color for the icons
-              }}
-            >
-              <i className="fab fa-twitter"></i>
-            </button>
-
-            <button
-              type="button"
-              data-mdb-button-init
-              data-mdb-ripple-init
-              className="btn btn-link btn-floating mx-1"
-              style={{
-                color: "black", // Text color for the icons
-              }}
-            >
-              <i className="fab fa-github"></i>
-            </button>
+            
           </div>
 
           <p
@@ -458,6 +448,14 @@ export default function Login() {
               Password
             </label>
           </div>
+
+          {/* Error Message Display */}
+{error && (
+  <div className="alert alert-danger" role="alert">
+    ⚠️ Please check your username and password again.
+  </div>
+)}
+
 
           {/* 2 column grid layout */}
           <div className="row mb-4">

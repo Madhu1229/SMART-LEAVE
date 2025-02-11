@@ -40,7 +40,7 @@ export default function NavBar() {
               <Nav.Link as={Link} to="/NewMember" className="customize-btn">NewMember</Nav.Link>
               <Nav.Link as={Link} to="/ViewMembers" className="customize-btn">ViewMembers</Nav.Link>
               <Nav.Link as={Link} to="/LeaveApplicant" className="customize-btn">LeaveApplicant</Nav.Link>
-              <Nav.Link as={Link} to="/Notifications" className="customize-btn">Notifications</Nav.Link>
+              <Nav.Link as={Link} to="/Notifications" className="customize-btn">Notices</Nav.Link>
               <Nav.Link as={Link} to="/ContactUs" className="customize-btn">Contact Us</Nav.Link>
             </Nav>
           </Navbar.Collapse>

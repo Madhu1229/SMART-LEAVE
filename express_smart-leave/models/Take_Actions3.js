@@ -8,8 +8,13 @@ const takeAction3Schema = new Schema({
      leaveClerkName: { type: String,  required: true },
      role: { type: String, required:true},
      signature3: { type: String, required: false },
-     date3:{ type: String, required: false }
-    
+     date3:{ type: String, required: false },
+     status: {
+          type: String,
+          enum: ["Pending", "Approved", "Rejected"], // Define possible status values
+          default: "Pending"  // Default to Pending if not specified
+      }
+     
 
 })
 

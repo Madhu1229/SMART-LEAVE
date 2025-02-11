@@ -610,12 +610,11 @@ return (
         </Row>
 
         <div className="text-center">
-          <Button 
-            variant="success" 
-            type="submit" 
-            
-            style={{ fontSize: '20px', width: '50%' }}
-          >
+        <Button 
+  variant="success" 
+  type="submit" 
+  style={{ fontSize: '20px', width: '50%', marginBottom: '40px' }} 
+>
             Leave Apply
           </Button>
 

@@ -254,11 +254,26 @@ setErrors((prevErrors) => ({
     
     if (!formData.gender) validationErrors.gender = "Please select a gender.";
     if (!formData.birthday) validationErrors.birthday = "Please select your birthday.";
-    if (!formData.email) validationErrors.email = "Please enter your email address.";
-    if (!formData.mobile) validationErrors.mobile = "Please enter your mobile number.";
+    if (!formData.email) {
+      validationErrors.email = "Please enter your email address.";
+    } else if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(formData.email)) {
+      validationErrors.email = "Please enter a valid Gmail address (e.g., example@gmail.com).";
+    }
+    
+    if (!formData.mobile) {
+      validationErrors.mobile = "Please enter your mobile number.";
+    } else if (!/^\d{10}$/.test(formData.mobile)) {
+      validationErrors.mobile = "Mobile number must be exactly 10 digits.";
+    }
+    
     if (!formData.memberID) validationErrors.memberID = "Please enter the member ID.";
     if (!formData.serviceNo) validationErrors.serviceNo = "Please enter the service No.";
-    if (!formData.nic) validationErrors.nic = "Please enter the NIC No.";
+    if (!formData.nic) {
+      validationErrors.nic = "Please enter the NIC No.";
+    } else if (!/^\d{9}[Vv]$|^\d{11}[Vv]$/.test(formData.nic)) {
+      validationErrors.nic = "NIC must be 8 or 10 digits ending with 'V' or 'v'.";
+    }
+    
     if (!formData.designation) validationErrors.designation = "Please enter the designation.";
     if (!formData.subDesignation) validationErrors.subDesignation = "Please enter the sub-designation.";
     if (!formData.maritalStatus) validationErrors.maritalStatus = "Please select your marital status.";
@@ -269,8 +284,8 @@ setErrors((prevErrors) => ({
     if (!formData.leaveRemaining) validationErrors.leaveRemaining = "Please enter the remaining leaves.";
     if (!formData.role) validationErrors.role = "Please enter the role.";
     if (!formData.birthCertificate) validationErrors.birthCertificate = "Please upload the birth certificate.";
-    if (!formData.otherDocument1) validationErrors.otherDocument1 = "Please upload document 1.";
-    if (!formData.otherDocument2) validationErrors.otherDocument2 = "Please upload document 2.";
+    if (!formData.otherDocument1) validationErrors.otherDocument1 = "Please upload National ID.";
+    if (!formData.otherDocument2) validationErrors.otherDocument2 = "Please upload Army ID.";
 
     setErrors(validationErrors);
     return Object.keys(validationErrors).length === 0;  // Returns true if there are no errors

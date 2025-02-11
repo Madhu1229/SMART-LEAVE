@@ -126,7 +126,69 @@ router.get("/", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-// API Endpoint to get leave applications by submission date and match with members
+// // API Endpoint to get leave applications by submission date and match with members
+// router.get("/getByDate", async (req, res) => {
+//     console.log("GET request received at /getByDate");
+//     try {
+//         const { date } = req.query; // Expecting a query parameter named 'date'
+//         if (!date) {
+//             return res.status(400).json({ status: "Date parameter is required" });
+//         }
+
+//         // Parse the date and define start and end of the day
+//         const selectedDate = new Date(date + 'Z');
+//         const startOfDay = new Date(selectedDate.setUTCHours(0, 0, 0, 0));
+//         const endOfDay = new Date(selectedDate.setUTCHours(23, 59, 59, 999));
+
+//         // Fetch all leave applications within the specified date range
+//         const applications = await Member_LeaveApplicant.find({
+//             date: {
+//                 $gte: startOfDay,
+//                 $lt: endOfDay,
+//             },
+//         });
+
+//         // Check if applications were found
+//         if (applications.length === 0) {
+//             return res.status(200).send({ status: "No leave applications found for the specified date", applications });
+//         }
+
+//         // Fetch all members for matching
+//         const members = await Member.find();
+
+//         // Create a map of members for quick lookup
+//         const memberMap = new Map();
+//         members.forEach(member => {
+//             memberMap.set(`${member.fullName}|${member.designation}`, member);
+//         });
+
+//         // Match applications with members and set status
+//         const matchedApplications = applications.map(app => {
+//             const key = `${app.name}|${app.designation}`;
+//             const member = memberMap.get(key); // O(1) lookup time
+
+//             return {
+//                 ...app.toObject(),
+//                 isValid: !!member, // true if matched, false if not matched
+//                 status: member ? 'Accepted' : 'Rejected', // Set status based on existence of matching member
+//                 matchedMember: member || null // Include matched member details if needed
+//             };
+//         });
+
+//         // Return the matched applications
+//         res.status(200).send({ status: "Leave applications fetched for the date", applications: matchedApplications });
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).send({ status: "Error fetching applications", error: err.message });
+//     }
+// });
+
+
+//above is ancient....................
+
+//now is new.......
+
+
 router.get("/getByDate", async (req, res) => {
     console.log("GET request received at /getByDate");
     try {
@@ -136,7 +198,7 @@ router.get("/getByDate", async (req, res) => {
         }
 
         // Parse the date and define start and end of the day
-        const selectedDate = new Date(date + 'Z');
+        const selectedDate = new Date(date + 'T00:00:00Z'); // Add timezone for consistency
         const startOfDay = new Date(selectedDate.setUTCHours(0, 0, 0, 0));
         const endOfDay = new Date(selectedDate.setUTCHours(23, 59, 59, 999));
 
@@ -159,19 +221,20 @@ router.get("/getByDate", async (req, res) => {
         // Create a map of members for quick lookup
         const memberMap = new Map();
         members.forEach(member => {
-            memberMap.set(`${member.fullName}|${member.designation}`, member);
+            const normalizedKey = `${member.fullName.trim().toLowerCase()}|${member.designation.trim().toLowerCase()}`;
+            memberMap.set(normalizedKey, member);
         });
 
         // Match applications with members and set status
         const matchedApplications = applications.map(app => {
-            const key = `${app.name}|${app.designation}`;
-            const member = memberMap.get(key); // O(1) lookup time
+            const normalizedKey = `${app.name.trim().toLowerCase()}|${app.designation.trim().toLowerCase()}`;
+            const member = memberMap.get(normalizedKey);
 
             return {
                 ...app.toObject(),
-                isValid: !!member, // true if matched, false if not matched
-                status: member ? 'Accepted' : 'Rejected', // Set status based on existence of matching member
-                matchedMember: member || null // Include matched member details if needed
+                isValid: !!member,
+                status: member ? 'Accepted' : 'Rejected',
+                matchedMember: member || null,
             };
         });
 
@@ -182,8 +245,6 @@ router.get("/getByDate", async (req, res) => {
         res.status(500).send({ status: "Error fetching applications", error: err.message });
     }
 });
-
-
 // // Route to get matching records
 // router.get('/matchLeaveApplicants', async (req, res) => {
 //     try {

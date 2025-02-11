@@ -45,9 +45,15 @@ function LeaveApplicationsByDate() {
 
     // State for form inputs
     const [recommendation, setRecommendation] = useState("");
+    const [allowedByHead, setallowedByHead] = useState("");
+    const [finalApproval, setfinalApproval] = useState("");
     const [supervisingOfficerName, setSupervisingOfficerName] = useState("");
+    const [headOfDepartmentName, setheadOfDepartmentName] = useState("");
+    const [leaveClerkName, setleaveClerkName] = useState("");
     const [role, setRole] = useState("");
     const [signature1, setSignature1] = useState(null);
+    const [signature2, setSignature2] = useState(null);
+    const [signature3, setSignature3] = useState(null);
 
     // State to track action completion status
     const [actionStatus, setActionStatus] = useState(() => {
@@ -82,10 +88,10 @@ function LeaveApplicationsByDate() {
             const leaveApplications = response.data.applications;
 
             const matchedApplications = leaveApplications.map(app => {
-                const isValid = membersData.find(member => member.fullName === app.name && member.designation === app.designation);
+                const isValid = membersData.find(member => member.fullName === app.name);
                 return {
                     ...app,
-                    status: app.isValid ? "Approved" : "Rejected",
+                    status: isValid ? "Approved" : "Rejected",
                 };
             });
 
@@ -162,6 +168,74 @@ function LeaveApplicationsByDate() {
             console.error('Error submitting the form:', error);
         }
     };
+
+
+    // Handle submission for Action 2
+    const handleSubmit2 = async () => {
+        if (!selectedApplication) return;
+
+        const applicationId = selectedApplication._id;
+
+        if (actionStatus[applicationId]?.isCompleted2) return; // Prevent multiple submissions
+
+        const formData = new FormData();
+        formData.append('allowedByHead', allowedByHead);
+        formData.append('headOfDepartmentName', headOfDepartmentName);
+        formData.append('role', role);
+        if (signature2) formData.append('signature2', signature2);
+
+        try {
+            await axios.post('http://localhost:8093/Take_Actions2/add', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            // Update the state for the specific application
+            setActionStatus(prevState => ({
+                ...prevState,
+                [applicationId]: {
+                    ...prevState[applicationId],
+                    isCompleted2: true,
+                    completedActions: (prevState[applicationId]?.completedActions || 0) + 1,
+                },
+            }));
+        } catch (error) {
+            console.error('Error submitting the form:', error);
+        }
+    };
+
+    // Handle submission for Action 3
+    const handleSubmit3 = async () => {
+        if (!selectedApplication) return;
+
+        const applicationId = selectedApplication._id;
+
+        if (actionStatus[applicationId]?.isCompleted3) return; // Prevent multiple submissions
+
+        const formData = new FormData();
+        formData.append('finalApproval', finalApproval);
+        formData.append('leaveClerkName', leaveClerkName);
+        formData.append('role', role);
+        if (signature3) formData.append('signature3', signature3);
+
+        try {
+            await axios.post('http://localhost:8093/Take_Actions3/add', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            // Update the state for the specific application
+            setActionStatus(prevState => ({
+                ...prevState,
+                [applicationId]: {
+                    ...prevState[applicationId],
+                    isCompleted3: true,
+                    completedActions: (prevState[applicationId]?.completedActions || 0) + 1,
+                },
+            }));
+        } catch (error) {
+            console.error('Error submitting the form:', error);
+        }
+    };
+    
 
     // Progress Bar Component
     const ProgressBar = ({ progress }) => {
@@ -298,7 +372,7 @@ function LeaveApplicationsByDate() {
 
 
             
-            <h2 className="mb-4">View Leave Applications by Date</h2>
+            <h2 className="mb-4">View Leave Status by Date</h2>
             <Form.Group controlId="date">
                 <Form.Label>Select Date:</Form.Label>
                 <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -320,9 +394,27 @@ function LeaveApplicationsByDate() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </Form.Group>
-            <Button className="mt-3" variant="primary" onClick={fetchApplicationsByDate} disabled={isLoading}>
-                {isLoading ? <Spinner animation="border" size="sm" /> : "Fetch Applications"}
-            </Button>
+            <Button 
+  className="mt-3" 
+  variant="primary" 
+  onClick={fetchApplicationsByDate} 
+  disabled={isLoading}
+  style={{ 
+    backgroundColor: "#022B23", 
+    opacity: "0.9", 
+    borderColor: "#022B23", // Match border color
+    color: "white", // Ensure text is visible
+    padding: "10px 20px", 
+    borderRadius: "8px",
+    fontSize: "16px",
+    cursor: "pointer",
+    backdropFilter: "blur(10px)", // Apply blur effect
+    WebkitBackdropFilter: "blur(10px)" // Safari support
+  }}
+>
+  {isLoading ? <Spinner animation="border" size="sm" /> : "Fetch Applications"}
+</Button>
+
 
             {/* Desktop View */}
             <div className="d-none d-md-block">

@@ -264,7 +264,7 @@ const deleteMember = (memberID) => {
                   <Image
                     src={item.photo ? `http://localhost:8093/uploads/${item.photo}` : 'http://localhost:8093/uploads/default.jpg'}
                     alt="Person"
-                    style={{ width: '100%', height: 'auto', maxWidth: '400px', maxHeight: '400px', borderRadius: '10%' }}
+                    style={{ width: '100%', height: 'auto', maxWidth: '100px', maxHeight: '100px', borderRadius: '15%' }}
                     onError={(e) => { e.target.onerror = null; e.target.src = 'http://localhost:8093/uploads/default.jpg'; }} // Fallback on error
                   />
 

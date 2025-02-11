@@ -126,10 +126,10 @@ useEffect(() => {
             const leaveApplications = response.data.applications;
 
             const matchedApplications = leaveApplications.map(app => {
-                const isValid = membersData.find(member => member.fullName === app.name && member.designation === app.designation);
+                const isValid = membersData.find(member => member.fullName === app.name);
                 return {
                     ...app,
-                    status: app.isValid ? "Approved" : "Rejected",
+                    status: isValid ? "Approved" : "Rejected",
                 };
             });
 
@@ -450,9 +450,27 @@ const handleSubmit3 = async () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </Form.Group>
-            <Button className="mt-3" variant="primary" onClick={fetchApplicationsByDate} disabled={isLoading}>
-                {isLoading ? <Spinner animation="border" size="sm" /> : "Fetch Applications"}
-            </Button>
+            <Button 
+  className="mt-3" 
+  variant="primary" 
+  onClick={fetchApplicationsByDate} 
+  disabled={isLoading}
+  style={{ 
+    backgroundColor: "#022B23", 
+    opacity: "0.9", 
+    borderColor: "#022B23", // Match border color
+    color: "white", // Ensure text is visible
+    padding: "10px 20px", 
+    borderRadius: "8px",
+    fontSize: "16px",
+    cursor: "pointer",
+    backdropFilter: "blur(10px)", // Apply blur effect
+    WebkitBackdropFilter: "blur(10px)" // Safari support
+  }}
+>
+  {isLoading ? <Spinner animation="border" size="sm" /> : "Fetch Applications"}
+</Button>
+
 
             {/* Render applications table */}
             {filteredApplications.length > 0 ? (
@@ -661,7 +679,7 @@ const handleSubmit3 = async () => {
                                 <option value="">Select</option>
                                 <option value="admin1">Admin I</option>
                                 <option value="admin2">Admin II</option>
-                                <option value="leaveApplicant">Leave Applicant</option>
+                                {/* <option value="leaveApplicant">Leave Applicant</option> */}
                             </Form.Control>
                         </Form.Group>
                         {supervisingOfficerName && role && (
@@ -719,7 +737,7 @@ const handleSubmit3 = async () => {
                                 <option value="">Select</option>
                                 <option value="admin1">Admin I</option>
                                 <option value="admin2">Admin II</option>
-                                <option value="leaveApplicant">Leave Applicant</option>
+                                {/* <option value="leaveApplicant">Leave Applicant</option> */}
                             </Form.Control>
                         </Form.Group>
                         {headOfDepartmentName && role && (
@@ -777,7 +795,7 @@ const handleSubmit3 = async () => {
                                 <option value="">Select</option>
                                 <option value="admin1">Admin I</option>
                                 <option value="admin2">Admin II</option>
-                                <option value="leaveApplicant">Leave Applicant</option>
+                                {/* <option value="leaveApplicant">Leave Applicant</option> */}
                             </Form.Control>
                         </Form.Group>
                         {leaveClerkName && role && (

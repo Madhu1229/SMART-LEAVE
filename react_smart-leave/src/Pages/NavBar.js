@@ -40,7 +40,7 @@ export default function NavBar() {
               <Nav.Link as={Link} to="/LeaveProfile" className="customize-btn">Leave Profile</Nav.Link>
               <Nav.Link as={Link} to="/LeaveApply" className="customize-btn">Apply Leave</Nav.Link>
               <Nav.Link as={Link} to="/LeaveStatus" className="customize-btn">Leave Status</Nav.Link>
-              <Nav.Link as={Link} to="/Notifications" className="customize-btn">Notifications</Nav.Link>
+              <Nav.Link as={Link} to="/Notifications" className="customize-btn">Notices</Nav.Link>
               <Nav.Link as={Link} to="/ContactUs" className="customize-btn">Contact Us</Nav.Link>
             </Nav>
           </Navbar.Collapse>
