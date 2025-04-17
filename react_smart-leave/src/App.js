@@ -17,6 +17,8 @@ import DashBoard from './AdminInterface/DashBoard';
 import ViewMembers from './AdminInterface/ViewMembers';
 import NewMember from './AdminInterface/NewMember';
 import LeaveApplicant from './AdminInterface/LeaveApplicant';
+import ViewLeaveApplicant2 from './AdminInterface/ViewLeaveApplicant2';
+import ViewLeaveApplicant3 from './AdminInterface/ViewLeaveApplicant3';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
@@ -44,7 +46,8 @@ function App() {
       
       <Route path="/NewMember" element={<NewMember />}/>
       <Route path="/LeaveApplicant" element={<LeaveApplicant />}/>
-
+      <Route path="/ViewLeaveApplicant2" element={<ViewLeaveApplicant2 />}/>
+      <Route path="/ViewLeaveApplicant3" element={<ViewLeaveApplicant3 />}/>
 
       </Routes>
       

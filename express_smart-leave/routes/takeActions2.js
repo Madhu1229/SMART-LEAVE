@@ -1,11 +1,14 @@
 import express from "express";
 import Take_Actions2 from "../models/Take_Actions2.js";
+
+//matching 2 data collections...
+import Member from "../models/Member.js";
+
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-//matching 2 data collections...
-import Member from "../models/Member.js";
+
 // // Define __dirname for ES modules
  const __filename = fileURLToPath(import.meta.url);
  const __dirname = path.dirname(__filename);
@@ -195,6 +198,41 @@ router.post("/add", upload.fields([
 //     }
 // });
 
+
+// API Endpoint to match supervisingOfficerName and role with fullName and role in Member collection
+router.get("/match-members", async (req, res) => {
+    try {
+        // Fetch all Take_Actions1 records
+        const takeActions = await Take_Actions2.find();
+
+        // Fetch all Member records
+        const members = await Member.find();
+
+        // Create a map for quick lookup of members by fullName and role
+        const memberMap = new Map();
+        members.forEach(member => {
+            const key = `${member.fullName}|${member.role}`;
+            memberMap.set(key, member);
+        });
+
+        // Match Take_Actions1 records with Member records
+        const matchedData = takeActions.map(action => {
+            const key = `${action.headOfDepartmentName}|${action.role}`;
+            const matchedMember = memberMap.get(key);
+
+            return {
+                ...action.toObject(), // Convert Mongoose document to plain object
+                matchedMember: matchedMember || null, // Include matched member details if found
+            };
+        });
+
+        res.status(200).json({ status: "Success", data: matchedData });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ status: "Error", error: err.message });
+    }
+});
+
 // Serve files from the 'uploads' folder
 router.get('/uploads_TakeActions/uploads_TakeActions2:filename', (req, res) => {
     const filePath = path.join(__dirname, '../uploads_TakeActions/uploads_TakeActions2', req.params.filename); // Adjust the path if necessary
@@ -210,73 +248,6 @@ router.get('/uploads_TakeActions/uploads_TakeActions2:filename', (req, res) => {
         }
     });
 });
-
-
-
-
-
-
-// API Endpoint to get leave applications by submission date and match with members
-router.get("/getByDate", async (req, res) => {
-    console.log("GET request received at /getByDate");
-    try {
-        const { date } = req.query; // Expecting a query parameter named 'date'
-        if (!date) {
-            return res.status(400).json({ status: "Date parameter is required" });
-        }
-
-        // Parse the date and define start and end of the day
-        const selectedDate = new Date(date + 'Z');
-        const startOfDay = new Date(selectedDate.setUTCHours(0, 0, 0, 0));
-        const endOfDay = new Date(selectedDate.setUTCHours(23, 59, 59, 999));
-
-        // Fetch all leave applications within the specified date range
-        const applications = await Member_LeaveApplicant.find({
-            date: {
-                $gte: startOfDay,
-                $lt: endOfDay,
-            },
-        });
-
-        // Check if applications were found
-        if (applications.length === 0) {
-            return res.status(200).send({ status: "No leave applications found for the specified date", applications });
-        }
-
-        // Fetch all members for matching
-        const members = await Member.find();
-
-        // Create a map of members for quick lookup
-        const memberMap = new Map();
-        members.forEach(member => {
-            memberMap.set(`${member.fullName}|${member.role}`, member);
-        });
-
-        // Match applications with members and set status(new variables check)
-        const matchedApplications = applications.map(app => {
-            const key = `${app.headOfDepartmentName}|${app.role}`;
-            const member = memberMap.get(key); // O(1) lookup time
-
-            // Convert Mongoose document to plain object
-            let appData = app.toObject();
-
-            // Remove `signature1` field
-            delete appData.signature2;
-
-            return {
-                ...appData,
-                matchedMember: member || null // Include matched member details if needed
-            };
-        });
-
-        // Return the matched applications
-        res.status(200).send({ status: "Successfully matched the details!", applications: matchedApplications });
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({ status: "Error fetching applications", error: err.message });
-    }
-});
-
 
 
 export default router;

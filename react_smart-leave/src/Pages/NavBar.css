@@ -1,107 +1,223 @@
-/* Navbar Styles */
-.custom-navbar {
-    background-color: #3e4551; /* Dark background */
-    height: 100%;
+/* Navbar container */
+.admin-navbar {
+  position: relative;
+  left: 50px;
+  padding: 0;
+  width: 100%;
+  border-bottom: none;
 }
 
-.navbar-nav .nav-link-custom {
-    color: white; /* Default link color */
-    font-weight: bold;
-    margin-right: 0;
+.navbar-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 100px;
+  padding: 0;
 }
 
- 
-
-.navbar-nav .active .nav-link-custom {
-    color: #f77f00; /* Active link color */
+/* Logo container - fixed to left corner */
+.logo-container {
+  position: absolute;
+  left: 30px;
+  z-index: 1000;
 }
 
-.customize-btn {
-    background-color:0;
-    color: white;
-    border-radius: 5px;
-    padding: 20px 15px;
+.navbar-brand {
+  padding: 3;
+  margin: 0;
 }
 
-.customize-btn:hover {
-    background-color: black; /* Darken on hover */
-    border-top: 15px solid yellow;
+.navbar-logo {
+  height: 75px;
+  width: auto;
+  margin: 3px;
+  margin-left: 15px;
 }
 
+/* Centered title */
+.title-center {
+  position: absolute;
+  transform: translateX(-50%);
+  text-align: center;
+  width: max-content;
+}
 
-  .customize-btn.active {
-    background-color: black; /* Apply when active */
-    border-top: 15px solid green;
+.welcome-title {
+  font-weight: 600;
+  font-size: 1.4rem;
+  margin-bottom: 0.2rem;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+
+  background: linear-gradient(to left, #FF3D00, #053e34); /* red to yellow */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Pacifico', cursive;
+
+  background-clip: text;
+
+}
+
+/* Navigation links */
+.nav-links-container {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.nav-link-item {
+  position: relative;
+  padding: 0 !important;
+  margin: 0 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none !important;
+}
+
+.link-top {
+  width: 100%;
+  height: 7px;
+  background-color: #053e34;
+  transition: all 0.3s ease;
+  border-top-left-radius: 10px; /* Rounded top-left corner */
+  border-top-right-radius: 10px; /* Rounded top-right corner */
+  border-bottom-left-radius: 0; /* Keep bottom square */
+  border-bottom-right-radius: 0; /* Keep bottom square */
+}
+.link-text {
+  padding: 8px 15px;
+  background-color: white;
+  color: #022B23 !important;
+  font-weight: 500;
+  border-radius: 0 0 4px 4px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Active/hover states */
+.nav-link-item.active .link-top,
+.nav-link-item:hover .link-top {
+  background-image: linear-gradient(to right, #FF3D00, #053e34);
+}
+
+.nav-link-item.active .link-text,
+.nav-link-item:hover .link-text {
+  background-color: #f8f9fa;
+  
+}
+
+/* Animations */
+.zoom-bounce-middle {
+  animation: zoomBounceCenter 1.6s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes zoomBounceCenter {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  85% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile responsiveness - Centered logo/title with fixed toggle */
+@media (max-width: 992px) {
+  .admin-navbar {
+    left: 0;
+    padding: 0 15px;
+  }
+
+  .navbar-container {
+    display: flex;
+    justify-content: center; /* Center the logo/title */
+    position: relative; /* For absolute positioning of toggle */
+    min-height: 70px;
+    padding: 10px 0;
+  }
+
+  .logo-title-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    margin: 0 auto; /* Center the wrapper */
+  }
+
+  .navbar-brand {
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+  }
+
+  .navbar-logo {
+    height: 50px;
+    margin-left: 35px; /* Remove left margin */
+  }
+
+  .welcome-title {
+    font-size: 1.2rem;
+    margin-left: 10px;
+    margin-top: 0;
+  }
+
+  /* Fixed toggle button on the right */
+  .navbar-toggle {
+    position: absolute;
+    right: 16px;
+    top: 10%;
+    transform: translateY(5%);
+    padding: 0.5rem;
+    margin: 0;
+    border: none;
+    background: transparent;
+    z-index: 2;
   }
 
 
-/* Logo customization */
-.navbar-brand .logo {
-    width: 150px; /* Adjust logo size */
+  .nav-links-container {
+    flex-direction: column;
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+    margin: 5px 0 0 0;
+    padding: 5px;
+  }
+
+  .nav-link-item {
+    width: 100%;
+    margin: 3px 0;
+  }
+
+  .navbar-collapse {
+    width: 100%;
+    background-color: white;
+    padding: 5px;
+    border-radius: 4px;
+    margin-top: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+
+  /* Scrollbar styling */
+  .nav-links-container::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .nav-links-container::-webkit-scrollbar-thumb {
+    background-color: #4CAF50;
+    border-radius: 10px;
+  }
 }
-
-/* Responsive behavior */
-@media (max-width: 991px) {
-    .navbar-nav {
-        text-align: center;
-    }
-
-    .nav-link-custom {
-        margin-right: 0;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        border-color: green;
-    }
-}
-
-
-/* ............................................................................................................................................................... */
-
-
-.custom-content-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Align everything to the left */
-  justify-content: center;
-  text-align: center; /* Center the text below each other */
-  padding-left: 30px; /* Adjust this value to move the content left */
-  width: 100%;
-}
-
-.fixed-logo {
-  max-width: 100px; /* Adjust logo size */
-  margin-bottom: 10px;
-}
-
-.title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.sentence1 {
-  color: green;
-  font-weight: 100;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.sentence2 {
-  color: #ff5722;
-  font-weight: 100;
-  text-decoration: overline;
-  font-size: 12px;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
