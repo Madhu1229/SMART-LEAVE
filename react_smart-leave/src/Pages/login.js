@@ -69,8 +69,11 @@ export default function Login() {
           // If the role is 'Admin1', navigate to /dashboard
           navigate('/DashBoard');
         } else if (role === 'admin2') {
-          // If the role is 'Admin1', navigate to /dashboard
-          navigate('/DashBoard');
+          // If the role is 'Admin2', navigate to /dashboard2
+          navigate('/DashBoard2');
+        } else if (role === 'admin3') {
+          // If the role is 'Admin3', navigate to /dashboard3
+          navigate('/DashBoard3');
         } 
         else {
           // If the role is not recognized, show an error or handle it

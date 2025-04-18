@@ -64,8 +64,8 @@ export default function AdminNavBar() {
             
             <Nav.Link 
               as={Link} 
-              to="/LeaveApplicant" 
-              className={`nav-link-item ${location.pathname === '/LeaveApplicant' ? 'active' : ''}`}
+              to="/ViewLeaveApplicant3" 
+              className={`nav-link-item ${location.pathname === '/ViewLeaveApplicant3' ? 'active' : ''}`}
             >
               <span className="link-top"></span>
               <span className="link-text">View Leave Applicant</span>
