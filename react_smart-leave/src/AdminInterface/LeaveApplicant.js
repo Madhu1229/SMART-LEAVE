@@ -30,6 +30,7 @@ function LeaveApplicationsByDate() {
     const [applications, setApplications] = useState([]);
     const [membersData, setMembersData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isMembersLoading, setIsMembersLoading] = useState(true);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [showActionModal1, setShowActionModal1] = useState(false);
     const [selectedApplication, setSelectedApplication] = useState(null);
@@ -49,7 +50,10 @@ function LeaveApplicationsByDate() {
     // Set today's date on component mount
     useEffect(() => {
         const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0];
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
         setDate(formattedDate);
     }, []);
 
@@ -57,43 +61,113 @@ function LeaveApplicationsByDate() {
     useEffect(() => {
         const fetchMembersData = async () => {
             try {
+                setIsMembersLoading(true);
                 const response = await axios.get(`http://localhost:8093/Member`);
                 setMembersData(response.data || []);
             } catch (error) {
                 console.error("Error fetching members data:", error);
                 setMembersData([]);
+            } finally {
+                setIsMembersLoading(false);
             }
         };
         fetchMembersData();
     }, []);
 
-    // Fetch applications when date changes
+    // Fetch applications when date or membersData changes
     useEffect(() => {
-        if (date) {
+        if (date && membersData.length > 0) {
             fetchApplicationsByDate();
         }
-    }, [date]);
+    }, [date, membersData]);
 
     // Fetch applications by date
     const fetchApplicationsByDate = async () => {
+        if (!membersData || membersData.length === 0) return;
+        
         setIsLoading(true);
         try {
-            if (!membersData || !Array.isArray(membersData)) {
-                console.error("Members data is not available.");
-                return;
-            }
-
-            const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, { params: { date } });
-            const leaveApplications = response.data.applications;
-
+            const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, { 
+                params: { date } 
+            });
+            const leaveApplications = response.data.applications || [];
+    
             const matchedApplications = leaveApplications.map(app => {
-                const isValid = membersData.find(member => member.fullName === app.name);
+                // Find potential matches by name
+                const potentialMatches = membersData.filter(m => 
+                    m.fullName.toLowerCase().trim() === app.name.toLowerCase().trim()
+                );
+                
+                let status = "Rejected";
+                let errorMessages = [];
+                let member = null;
+            
+                // ===== 1. Check Member Match =====
+                if (potentialMatches.length > 0) {
+                    // Try to find an exact match (all fields correct)
+                    member = potentialMatches.find(m => 
+                        m.designation.toLowerCase().trim() === app.designation.toLowerCase().trim() &&
+                        m.subDesignation.toLowerCase().trim() === app.subDesignation.toLowerCase().trim() &&
+                        m.ministry.toLowerCase().trim() === app.ministry.toLowerCase().trim() &&
+                        new Date(m.joiningDate).toISOString() === new Date(app.firstAppointmentDate).toISOString()
+                    );
+            
+                    // If no exact match, list mismatched fields for closest match
+                    if (!member) {
+                        const partialMatch = potentialMatches[0]; // Take the first potential match
+                        const mismatches = [];
+                        
+                        if (partialMatch.designation.toLowerCase().trim() !== app.designation.toLowerCase().trim()) {
+                            mismatches.push(`designation (${app.designation} ≠ ${partialMatch.designation})`);
+                        }
+                        if (partialMatch.subDesignation.toLowerCase().trim() !== app.subDesignation.toLowerCase().trim()) {
+                            mismatches.push(`sub-designation (${app.subDesignation} ≠ ${partialMatch.subDesignation})`);
+                        }
+                        if (partialMatch.ministry.toLowerCase().trim() !== app.ministry.toLowerCase().trim()) {
+                            mismatches.push(`ministry (${app.ministry} ≠ ${partialMatch.ministry})`);
+                        }
+                        if (new Date(partialMatch.joiningDate).toISOString() !== new Date(app.firstAppointmentDate).toISOString()) {
+                            mismatches.push(`first appointment date (${app.firstAppointmentDate} ≠ ${partialMatch.joiningDate})`);
+                        }
+                        
+                        if (mismatches.length > 0) {
+                            errorMessages.push(`Potential match for ${partialMatch.fullName} but mismatched fields: ${mismatches.join(', ')}`);
+                        }
+                    }
+                } else {
+                    errorMessages.push("No member found with this name");
+                }
+            
+                // ===== 2. Check Leave Calculations (if a member was found, even if fields don't match) =====
+                if (potentialMatches.length > 0) {
+                    const closestMatch = potentialMatches[0]; // Use the closest match for leave validation
+                    
+                    // Check if requested leave exceeds remaining leave
+                    const totalLeaveRequested = app.leaveDaysC + app.leaveDaysV + app.leaveDaysO;
+                    if (totalLeaveRequested > closestMatch.leaveRemaining) {
+                        errorMessages.push(`Total requested leave (${totalLeaveRequested}) exceeds remaining leave (${closestMatch.leaveRemaining})`);
+                    }
+            
+                    // Check if leave taken matches records
+                    const leaveTakenSum = app.leaveTakenC + app.leaveTakenV + app.leaveTakenO;
+                    if (leaveTakenSum !== closestMatch.leaveTaken) {
+                        errorMessages.push(`Sum of leave taken (${leaveTakenSum}) doesn't match member's total leave taken (${closestMatch.leaveTaken})`);
+                    }
+                }
+            
+                // Only approve if no errors exist (perfect match + valid leave)
+                if (member && errorMessages.length === 0) {
+                    status = "Approved";
+                }
+                
                 return {
                     ...app,
-                    status: isValid ? "Approved" : "Rejected",
+                    status: status,
+                    errors: errorMessages.length > 0 ? errorMessages : null,
+                    memberDetails: member || null
                 };
             });
-
+    
             setApplications(matchedApplications);
         } catch (error) {
             console.error("Error fetching applications:", error.response ? error.response.data : error.message);
@@ -103,8 +177,15 @@ function LeaveApplicationsByDate() {
         }
     };
 
-    // Format date
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+    // Format date for display
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${month}/${day}/${year}`;
+    };
 
     // Filter applications
     const filteredApplications = applications.filter(app => {
@@ -113,6 +194,15 @@ function LeaveApplicationsByDate() {
             app.designation.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesStatus && matchesSearch;
     });
+
+    // Check if name and role match
+    const isNameAndRoleValid = (supervisingOfficerName, role) => {
+        if (!supervisingOfficerName || !role || !membersData || !Array.isArray(membersData)) return false;
+        return membersData.some(member => 
+            member.fullName.toLowerCase() === supervisingOfficerName.trim().toLowerCase() && 
+            member.role.toLowerCase() === role.trim().toLowerCase() 
+        );
+    };
 
     // Handle viewing details
     const handleViewDetails = (application) => {
@@ -124,15 +214,6 @@ function LeaveApplicationsByDate() {
     const handleTakeAction = (application) => {
         setSelectedApplication(application);
         setShowActionModal1(true);
-    };
-
-    // Check if name and role match
-    const isNameAndRoleValid = (supervisingOfficerName, role) => {
-        if (!supervisingOfficerName || !role || !membersData || !Array.isArray(membersData)) return false;
-        return membersData.some(member => 
-            member.fullName.toLowerCase() === supervisingOfficerName.trim().toLowerCase() && 
-            member.role.toLowerCase() === role.trim().toLowerCase()
-        );
     };
 
     // Clear signature
@@ -212,45 +293,39 @@ function LeaveApplicationsByDate() {
     };
 
     return (
-        <div className="leave-applications-container ">
+        <div className="leave-applications-container">
             {/* Header */}
-             {/* FOR LOGO */}
-                                    <div className="row1 mb-0 " >
-                                
-                                      <div className="col-sm-12 p-0 " style={{ marginRight: '0PX', padding: '0px' }}>
-                                         <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
-                                              <div className="col-sm-8 ">
-                                                <div className="h6">
-                                                  <div className="contact-info d-flex align-items-center "> {/* Flexbox for contact info */}
-                                                    <img src={Icon1} className="icon" alt="Web-site link" />
-                                                      <span className="email">info@smartLeave.com</span>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                
-                                          <div className="col-sm-3">
-                                            <div className="button-container ml-auto"> {/* Pushes buttons to the right */}
-                                                        <Button onClick={()=>navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
-                                                        <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
-                                                        
-                                                        </div>
-                                          </div>
-                                      
-                                          <div className="col-sm-1" >
-                                            <div className="icon-container"> {/* Wrapper for Icon2 */}
-                                              <img src={Icon2} className="icon2" alt="Web-site link" />
-                                            </div>
-                                          </div>
-                                
-                                        </div>
-                                      </div>
-                                    </div>
-                                
+            <div className="row1 mb-0">
+                <div className="col-sm-12 p-0" style={{ marginRight: '0PX', padding: '0px' }}>
+                    <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
+                        <div className="col-sm-8">
+                            <div className="h6">
+                                <div className="contact-info d-flex align-items-center">
+                                    <img src={Icon1} className="icon" alt="Web-site link" />
+                                    <span className="email">info@smartLeave.com</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-sm-3">
+                            <div className="button-container ml-auto">
+                                <Button onClick={()=>navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
+                                <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
+                            </div>
+                        </div>
+                        <div className="col-sm-1">
+                            <div className="icon-container">
+                                <img src={Icon2} className="icon2" alt="Web-site link" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <AdminNavBar/>
             
+            {/* Log out message */}
             {logoutMessage && (
-                <div className="logout-message">
+                <div className="custom-green-btn" role="alert">
                     {logoutMessage}
                 </div>
             )}
@@ -267,6 +342,7 @@ function LeaveApplicationsByDate() {
                                 value={date} 
                                 onChange={(e) => setDate(e.target.value)}
                                 className="form-control"
+                                max={new Date().toISOString().split('T')[0]}
                             />
                         </div>
                         <div className="filter-group">
@@ -295,10 +371,10 @@ function LeaveApplicationsByDate() {
                 </div>
 
                 <div className="applications-table-container">
-                    {isLoading ? (
+                    {isMembersLoading || isLoading ? (
                         <div className="loading-spinner">
                             <Spinner animation="border" variant="primary" />
-                            <p>Loading applications...</p>
+                            <p>{isMembersLoading ? "Loading member data..." : "Loading applications..."}</p>
                         </div>
                     ) : filteredApplications.length > 0 ? (
                         <>
@@ -357,8 +433,8 @@ function LeaveApplicationsByDate() {
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <div className="action-buttons">
-                                                        <Button variant="info" onClick={() => handleViewDetails(app)}>
+                                                    <div className="action-buttons d-flex flex-column gap-2">
+                                                        <Button className="info custom-green-btn" onClick={() => handleViewDetails(app)}>
                                                             View
                                                         </Button>
                                                         <Button 
@@ -403,97 +479,92 @@ function LeaveApplicationsByDate() {
                     <Modal.Body>
                         {selectedApplication && (
                             <div className="application-details">
-                               
-                               
-                                    <div className="detail-row">
-                                        <div className="detail-label"></div>
-                                        <div className="detail-value">
-                                          <tbody>
-                                                                          <tr>
-                                                                              <th>Name</th>
-                                                                              <td>{selectedApplication.name}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Designation</th>
-                                                                              <td>{selectedApplication.designation}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Sub Designation</th>
-                                                                              <td>{selectedApplication.subDesignation}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Ministry</th>
-                                                                              <td>{selectedApplication.ministry}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Leave Days (Casual)</th>
-                                                                              <td>{selectedApplication.leaveDaysC}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Leave Days (Vacation)</th>
-                                                                              <td>{selectedApplication.leaveDaysV}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Leave Days (Other)</th>
-                                                                              <td>{selectedApplication.leaveDaysO}</td>
-                                                                          </tr>
-                                                                          <tr>
-                                                                              <th>Date of First Appointment</th>
-                                                                              <td>{formatDate(selectedApplication.firstAppointmentDate)}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Commence Leave Date</th>
-                                                                              <td>{formatDate(selectedApplication.commenceLeaveDate)}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Resume Duties Date</th>
-                                                                              <td>{formatDate(selectedApplication.resumeDutiesDate)}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Reason for Leave</th>
-                                                                              <td>{selectedApplication.reasonForLeave}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Applicant Signature</th>
-                                                                              <td>
-                                                                                  <Image
-                                                                                      src={selectedApplication.applicantSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.applicantSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
-                                                                                      alt="Applicant Signature"
-                                                                                      style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
-                                                                                  />
-                                                                              </td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Signature of the Acting Officer</th>
-                                                                              <td>
-                                                                                  <Image
-                                                                                      src={selectedApplication.officerActingSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.officerActingSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
-                                                                                      alt="Officer Acting Signature"
-                                                                                      style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
-                                                                                  />
-                                                                              </td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                          <tr>
-                                                                              <th>Status</th>
-                                                                              <td>{selectedApplication.status}</td>
-                                                                          </tr>
-                                                                          <br/>
-                                                                      </tbody>
-                                        </div>
-                                    </div>
-                                
+                                <table className="details-table">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <td>{selectedApplication.name}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Designation</th>
+                                            <td>{selectedApplication.designation}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Sub Designation</th>
+                                            <td>{selectedApplication.subDesignation}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Ministry</th>
+                                            <td>{selectedApplication.ministry}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Leave Days (Casual)</th>
+                                            <td>{selectedApplication.leaveDaysC}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Leave Days (Vacation)</th>
+                                            <td>{selectedApplication.leaveDaysV}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Leave Days (Other)</th>
+                                            <td>{selectedApplication.leaveDaysO}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date of First Appointment</th>
+                                            <td>{formatDate(selectedApplication.firstAppointmentDate)}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Commence Leave Date</th>
+                                            <td>{formatDate(selectedApplication.commenceLeaveDate)}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Resume Duties Date</th>
+                                            <td>{formatDate(selectedApplication.resumeDutiesDate)}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Reason for Leave</th>
+                                            <td>{selectedApplication.reasonForLeave}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Applicant Signature</th>
+                                            <td>
+                                                <Image
+                                                    src={selectedApplication.applicantSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.applicantSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                                    alt="Applicant Signature"
+                                                    style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Signature of the Acting Officer</th>
+                                            <td>
+                                                <Image
+                                                    src={selectedApplication.officerActingSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.officerActingSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                                    alt="Officer Acting Signature"
+                                                    style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Status</th>
+                                            <td>{selectedApplication.status}</td>
+                                        </tr>
+                                        {selectedApplication.errors && (
+                                            <tr>
+                                                <th>Error Details</th>
+                                                <td>
+                                                    <ul className="error-list">
+                                                        {selectedApplication.errors.map((error, index) => (
+                                                            <li key={index} className="error-item">
+                                                                {error}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         )}
                     </Modal.Body>
@@ -541,7 +612,6 @@ function LeaveApplicationsByDate() {
                                 >
                                     <option value="">Select</option>
                                     <option value="admin1">Admin I</option>
-                                    <option value="admin2">Admin II</option>
                                 </Form.Control>
                             </Form.Group>
                             {supervisingOfficerName && role && (

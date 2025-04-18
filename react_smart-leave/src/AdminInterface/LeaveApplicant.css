@@ -29,7 +29,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0 20px;
 }
@@ -84,16 +84,7 @@
     padding-bottom: 10px;
 }
 
-.page-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 3px;
-    background-color: #3498db;
-}
+
 
 /* Filters Section */
 .filters-section {
@@ -186,7 +177,7 @@
 }
 
 .status-badge.approved {
-    background-color: #2ecc71;
+    background-color: #053e34;
 }
 
 .status-badge.rejected {
@@ -205,7 +196,7 @@
 }
 
 .action-message {
-    color: #27ae60;
+    color: #053e34;
     font-size: 12px;
     font-weight: 500;
     margin-top: 5px;
@@ -257,7 +248,7 @@
 }
 
 .action-modal .modal-header {
-    background-color: #3498db;
+    background-color: #053e34;
     color: white;
 }
 
@@ -290,8 +281,8 @@
 }
 
 .submit-btn {
-    background-color: #3498db;
-    border-color: #3498db;
+    background-color: #053e34;
+    border-color: #053e34;
 }
 
 .validation-message {
@@ -307,7 +298,7 @@
 
 .validation-message.success {
     background-color: #e8f5e9;
-    color: #2e7d32;
+    color: #053e34;
 }
 
 /* Responsive Styles */
@@ -336,3 +327,121 @@
     }
 }
 
+.custom-green-btn {
+    background-color: #053e34 !important; /* or any green you like */
+    color: white;
+    border: none;
+  }
+  
+  .custom-green-btn:hover {
+    background-color: #053e34 !important; /* darker green for hover */
+  }
+  
+
+  /* Add this to your CSS */
+.applications-table {
+    width: 100%;
+    table-layout: auto; /* or 'fixed' for equal column widths */
+    min-width: fit-content; /* Ensures table doesn't shrink beyond content */
+  }
+  
+  /* Make table responsive */
+  .table-responsive {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+
+  /* Adjust your container padding */
+.container-fluid.p-5 {
+    padding: 1.5rem !important; /* Reduce from 3rem (p-5) */
+  }
+  
+  /* For mobile */
+  @media (max-width: 768px) {
+    .container-fluid {
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+    }
+  }
+
+  /* Ensure modal content fits */
+.details-modal .modal-body,
+.action-modal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* For signature canvas */
+.signature-canvas-container {
+  max-width: 100%;
+}
+
+.signature-canvas {
+  width: 100% !important;
+  height: 150px !important;
+}
+
+/* Ensure modal content fits */
+.details-modal .modal-body,
+.action-modal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* For signature canvas */
+.signature-canvas-container {
+  max-width: 100%;
+}
+
+.signature-canvas {
+  width: 100% !important;
+  height: 150px !important;
+}
+
+body {
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #root {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .custom-green-btn {
+  background-color: #053e34 !important; /* or any green you like */
+  color: white;
+  border: none;
+  height: 40px;
+}
+
+.custom-green-btn:hover {
+  background-color: #053e34 !important; /* darker green for hover */
+}
+
+.error-messages {
+    margin-top: 0.25rem;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.8rem;
+    margin-bottom: 0.1rem;
+}
+
+.small-text {
+    font-size: 0.8rem;
+}
+
+
+/* for view leave applicant 2 */
+
+/* Add to LeaveApplicant.css */
+.action-message.warning {
+    color: #dc3545; /* Red color for warning messages */
+    font-weight: normal;
+}

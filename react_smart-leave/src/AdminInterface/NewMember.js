@@ -7,8 +7,6 @@ import Icon2 from '../Images/Icon2.png';
 import Footer from '../Pages/Footer';
 import { useNavigate } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
-
-
 import './LoginIcon.css';
 
 const NewMember = () => {
@@ -53,6 +51,20 @@ const NewMember = () => {
     otherDocument2: null,
   });
   
+  const [errors, setErrors] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Auto-calculate leave remaining when leave taken changes
+  useEffect(() => {
+    if (formData.leaveTaken !== '') {
+      const taken = parseInt(formData.leaveTaken) || 0;
+      const remaining = 100 - taken;
+      setFormData(prev => ({
+        ...prev,
+        leaveRemaining: remaining < 0 ? 0 : remaining
+      }));
+    }
+  }, [formData.leaveTaken]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -116,8 +128,7 @@ const NewMember = () => {
     }
   };
   
-  const [errors, setErrors] = useState({});
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  
   
   const [selectedFile, setSelectedFile] = useState(''); // Add this line
 
@@ -728,6 +739,7 @@ setErrors((prevErrors) => ({
                       <option value="">Select Role</option>
                       <option value="admin1">Admin I</option>
                       <option value="admin2">Admin II</option>
+                      <option value="admin3">Admin III</option>
                       <option value="leaveApplicant">Leave Applicant</option>
           
                     </Form.Control>

@@ -786,6 +786,7 @@ const deleteMember = (memberID) => {
                       <option value="">Select Role</option>
                       <option value="admin1">Admin I</option>
                       <option value="admin2">Admin II</option>
+                      <option value="admin3">Admin III</option>
                       <option value="leaveApplicant">Leave Applicant</option>
           
 
