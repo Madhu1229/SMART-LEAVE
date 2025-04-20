@@ -1,0 +1,86 @@
+.leave-status-table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.leave-status-table th {
+    background-color: #053e34;
+    color: white;
+    text-align: center;
+}
+
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.status-badge.approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-badge.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-badge.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.signature-status {
+    margin-top: 5px;
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+}
+
+.signature-indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.signature-indicator.completed {
+    background-color: #28a745;
+}
+
+.signature-indicator.pending {
+    background-color: #ffc107;
+    opacity: 0.5;
+}
+
+.signature-image {
+    max-width: 100px;
+    max-height: 50px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+}
+
+/* PDF download button styles */
+.pdf-download-btn {
+    background-color: #053e34;
+    border-color: #053e34;
+}
+
+.pdf-download-btn:hover {
+    background-color: #042a23;
+    border-color: #042a23;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .leave-status-table {
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 3px 6px;
+        font-size: 12px;
+    }
+}

@@ -254,6 +254,7 @@ import take_action1Router from "./routes/takeActions1.js";
 import take_action2Router from "./routes/takeActions2.js";
 import take_action3Router from "./routes/takeActions3.js";
 import auth from "./routes/authRoutes.js"
+import leaveNotificationsRouter from "./routes/leaveNotifications.js"
 
 // Use routes in the app
 app.use("/Member", memberRouter);
@@ -262,6 +263,9 @@ app.use("/Take_Actions1", take_action1Router);
 app.use("/Take_Actions2", take_action2Router);
 app.use("/Take_Actions3", take_action3Router);
 app.use("/auth", auth);
+app.use("/leaveNotifications",leaveNotificationsRouter)
+
+
 
 
 // Start the server
@@ -271,11 +275,10 @@ app.listen(PORT, () => {
   routesInit(app,passport)
 });
 
-
+// const leaveNotificationRoutes = require('./routes/leaveNotifications');
+// app.use('/api/notifications', leaveNotificationRoutes);
 
 // GOOGLE_CLIENT_ID :process.env.GOOGLE_CLIENT_ID
 // GOOGLE_CLIENT_SECRET :process.env.GOOGLE_CLIENT_SECRET
 // GOOGLE_REDIRECT_URL :process.env.GOOGLE_REDIRECT_URL
 // SESSION_SECRET : process.env.SESSION_SECRET
-
-

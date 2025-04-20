@@ -4,12 +4,17 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { format } from 'date-fns';
+import mongoose from "mongoose";
+
 
 
 //matching 2 data collections...
 import Member from "../models/Member.js";
 
 const router = express.Router();
+
+
+
 
 // Ensure the uploads folder exists
 const uploadFolder = 'uploads_LeaveApplicant';
@@ -279,8 +284,100 @@ router.get("/getByDate", async (req, res) => {
 // });
 
 
+// Get leave applications for the current user
+router.get("/auth/validate", async (req, res) => {
+    try {
+      // You'll need to get the user ID from the token
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+  
+      const decoded = jwt.verify(token, "smart-leave-2025");
+      const user = await Member.findOne({ _id: decoded.id });
+  
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      // Find applications where name matches user's fullName
+      const applications = await Member_LeaveApplicant.find({ 
+        name: user.fullName 
+      });
+  
+      res.json(applications);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 
+//   const { ObjectId } = require('mongodb');
+// db.collection('leaveApplicants').find({ _id: ObjectId(id) }).toArray((err, result) => {
+//     if (err) throw err;
+//     res.json(result);
+// });
 
+
+  // Add this route to get a single leave application by ID
+
+ // Get leave application by ID
+router.get("/get/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // ✅ Validate MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Invalid ID format",
+                error: "The provided ID is not a valid MongoDB ObjectId" 
+            });
+        }
+
+        // ✅ Find leave application by ID
+        const application = await Member_LeaveApplicant.findById(id).lean();
+
+        if (!application) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Leave application not found",
+                error: "No application found with the provided ID"
+            });
+        }
+
+        // ✅ Format date fields to ISO string
+        const formattedApplication = {
+            ...application,
+            date: application.date ? new Date(application.date).toISOString() : null,
+            firstAppointmentDate: application.firstAppointmentDate ? new Date(application.firstAppointmentDate).toISOString() : null,
+            commenceLeaveDate: application.commenceLeaveDate ? new Date(application.commenceLeaveDate).toISOString() : null,
+            resumeDutiesDate: application.resumeDutiesDate ? new Date(application.resumeDutiesDate).toISOString() : null
+        };
+
+        res.status(200).json({ 
+            success: true,
+            data: formattedApplication
+        });
+    } catch (err) {
+        console.error('Error in /get/:id:', err);
+        res.status(500).json({ 
+            success: false,
+            message: "Internal server error",
+            error: err.message
+        });
+    }
+});
+
+// Optional: Global error handler (keep this at the end of all routes)
+router.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: err.message
+    });
+});
 
 export default router;

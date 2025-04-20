@@ -23,6 +23,9 @@ function LeaveApplicationsByDate() {
         }, 3000);
     }
         
+
+    
+
     // State for filters and data
     const [date, setDate] = useState("");
     const [leaveStatus, setLeaveStatus] = useState("All");
@@ -262,7 +265,24 @@ function LeaveApplicationsByDate() {
             await axios.post('http://localhost:8093/Take_Actions3/add', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-    
+// Then send notification
+const member = membersData.find(m => 
+    m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
+);
+
+if (member && member.email) {
+    await axios.post('http://localhost:8093/api/notifications/send-leave-notification', {
+        application: selectedApplication,
+        actionDetails: {
+            actionNumber: 3,
+            actionName: "Leave Clerk Approval",
+            status: finalApproval === "Recommended" ? "Approved" : "Rejected",
+            processedBy: leaveClerkName,
+            comments: finalApproval
+        },
+        applicantEmail: member.email
+    });
+}
             const updatedStatus = {
                 ...actionStatus,
                 [applicationId]: {
@@ -565,6 +585,18 @@ function LeaveApplicationsByDate() {
                                                                     {actionStatus[app._id].message3}
                                                                 </div>
                                                             )}
+
+                                                            {actionStatus[app._id]?.isCompleted3 && (
+                                                                <Button 
+                                                                    variant="info" 
+                                                                    onClick={() => navigate(`/LeavePDF/${app._id}`)}
+                                                                    className="download-btn"
+                                                                >
+                                                                    Download PDF
+                                                                </Button>
+                                                            )}
+
+
                                                         </>
 
                                                     </div>

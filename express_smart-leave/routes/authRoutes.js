@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import express from "express";
 import Member from "../models/Member.js";
+// import jwt from "jsonwebtoken";
 
 const router = express.Router();
 let tokenBlacklist = [];
@@ -36,7 +37,7 @@ router.post("/login", async (req, res) => {
         // If passwords match, generate a JWT token
         const token = jwt.sign(
             { id: member._id, role: member.role },
-            "your_secret_key", // Replace with your actual secret key
+            "smart-leave-2025", // Replace with your actual secret key
             { expiresIn: "1d" }
             
         );
@@ -70,5 +71,20 @@ router.post("/logout", (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+router.get("/validate", (req, res) => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.json({ valid: false });
+      }
+  
+      const decoded = jwt.verify(token, "smart-leave-2025");
+      res.json({ valid: true, userId: decoded.id });
+    } catch (err) {
+      res.json({ valid: false });
+    }
+  });
 
 export default router;

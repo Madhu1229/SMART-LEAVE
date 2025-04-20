@@ -1,0 +1,40 @@
+.leave-pdf-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.pdf-content {
+    background-color: white;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.signature-box {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.signature-img {
+    border: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+@media print {
+    .leave-pdf-page {
+        background-color: white;
+    }
+    
+    .pdf-content {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+}

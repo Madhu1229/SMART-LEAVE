@@ -22,7 +22,10 @@ function LeaveApplicationsByDate() {
             window.location.href = '/';
         }, 3000);
     }
-        
+       
+     
+
+
     // State for filters and data
     const [date, setDate] = useState("");
     const [leaveStatus, setLeaveStatus] = useState("All");
@@ -254,6 +257,25 @@ function LeaveApplicationsByDate() {
             await axios.post('http://localhost:8093/Take_Actions2/add', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
+
+            // Then send notification
+        const member = membersData.find(m => 
+            m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
+        );
+        
+        if (member && member.email) {
+            await axios.post('http://localhost:8093/api/notifications/send-leave-notification', {
+                application: selectedApplication,
+                actionDetails: {
+                    actionNumber: 2,
+                    actionName: "Head of Department Recommendation",
+                    status: allowedByHead === "Recommended" ? "Approved" : "Rejected",
+                    processedBy: headOfDepartmentName,
+                    comments: allowedByHead
+                },
+                applicantEmail: member.email
+            });
+        }
     
             const updatedStatus = {
                 ...actionStatus,

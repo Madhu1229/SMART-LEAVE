@@ -1,326 +1,508 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Table, Button, Form, Modal, Spinner, Card, Badge } from "react-bootstrap";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { 
+  Container, 
+  Card, 
+  Button, 
+  Spinner, 
+  Alert, 
+  ProgressBar, 
+  Row, 
+  Col, 
+  Modal,
+  Image,
+  Badge
+} from 'react-bootstrap';
+import './LeaveStatus.css';
+import NavBar from '../Pages/NavBar';
+import Icon1 from '../Images/Icon1.png';
+import Icon2 from '../Images/Icon2.png';
 import Footer from '../Pages/Footer';
 
-function LeaveApplicationsByDate() {
-    // State for filters and data
-    const [date, setDate] = useState("");
-    const [leaveStatus, setLeaveStatus] = useState("All");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [applications, setApplications] = useState([]);
-    const [membersData, setMembersData] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [showActionModal1, setShowActionModal1] = useState(false);
-    const [showActionModal2, setShowActionModal2] = useState(false);
-    const [showActionModal3, setShowActionModal3] = useState(false);
-    const [selectedApplication, setSelectedApplication] = useState(null);
-    const [actionStep, setActionStep] = useState(null);
+function LeaveStatus() {
+  const [logoutMessage, setLogoutMessage] = useState('');
+  const navigate = useNavigate();
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-    // State for form inputs
-    const [recommendation, setRecommendation] = useState("");
-    const [supervisingOfficerName, setSupervisingOfficerName] = useState("");
-    const [role, setRole] = useState("");
-    const [signature1, setSignature1] = useState(null);
+  // Logout function
+  function logout() {
+    localStorage.removeItem('token');
+    setLogoutMessage('You have been logged out successfully.');
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 3000);
+  }
 
-    // State to track action completion status
-    const [actionStatus, setActionStatus] = useState(() => {
-        const savedActionStatus = localStorage.getItem("actionStatus");
-        return savedActionStatus ? JSON.parse(savedActionStatus) : {};
-    });
-
-    // Save actionStatus to localStorage whenever it changes
-    useEffect(() => {
-        localStorage.setItem("actionStatus", JSON.stringify(actionStatus));
-    }, [actionStatus]);
-
-    // Fetch members data on component mount
-    useEffect(() => {
-        const fetchMembersData = async () => {
-            try {
-                const response = await axios.get(`http://localhost:8093/Member`);
-                setMembersData(response.data || []);
-            } catch (error) {
-                console.error("Error fetching members data:", error);
-                setMembersData([]);
-            }
-        };
-        fetchMembersData();
-    }, []);
-
-    // Fetch applications by date
-    const fetchApplicationsByDate = async () => {
-        setIsLoading(true);
+  // Fetch user's leave applications
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        console.log('Token from storage:', token); // Debug log
+        
+        if (!token) {
+          console.log('No token found, redirecting to login');
+          navigate('/LeaveStatus');
+          return;
+        }
+  
+        // Verify token is still valid
         try {
-            const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, { params: { date } });
-            const leaveApplications = response.data.applications;
-
-            const matchedApplications = leaveApplications.map(app => {
-                const isValid = membersData.find(member => member.fullName === app.name && member.designation === app.designation);
-                return {
-                    ...app,
-                    status: app.isValid ? "Approved" : "Rejected",
-                };
-            });
-
-            setApplications(matchedApplications);
-        } catch (error) {
-            console.error("Error fetching applications:", error);
-            alert("Error fetching applications. Check the console for details.");
-        } finally {
-            setIsLoading(false);
+          console.log('Validating token...');
+          const validation = await axios.get('http://localhost:8093/auth/validate', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          console.log('Validation response:', validation.data);
+          
+          if (!validation.data.valid) {
+            console.log('Token invalid, redirecting');
+            localStorage.removeItem('token');
+            navigate('/login');
+            return;
+          }
+        } catch (validationError) {
+          console.error("Validation error:", validationError.response?.data || validationError.message);
+          localStorage.removeItem('token');
+          navigate('/login');
+          return;
         }
+        // First get all leave applications for this user
+        const leaveResponse = await axios.get(
+          'http://localhost:8093/Member_LeaveApplicant/user-applications', 
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        
+        // Then get all approval actions
+        const [actions1, actions2, actions3] = await Promise.all([
+          axios.get('http://localhost:8093/Take_Actions1'),
+          axios.get('http://localhost:8093/Take_Actions2'),
+          axios.get('http://localhost:8093/Take_Actions3')
+        ]);
+
+        // Combine the data
+        const enrichedApplications = leaveResponse.data.map(app => {
+          // Find matching actions for this application
+          const action1 = actions1.data.find(a => a.applicationId === app._id);
+          const action2 = actions2.data.find(a => a.applicationId === app._id);
+          const action3 = actions3.data.find(a => a.applicationId === app._id);
+
+          return {
+            ...app,
+            action1,
+            action2,
+            action3,
+            action1Completed: !!action1,
+            action2Completed: !!action2,
+            action3Completed: !!action3,
+            action1Date: action1?.date1,
+            action2Date: action2?.date2,
+            action3Date: action3?.date3
+          };
+        });
+
+        setApplications(enrichedApplications);
+      } catch (err) {
+        console.error("Error fetching applications:", err);
+        setError("Failed to load leave applications. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    // Format date
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
+    fetchApplications();
+  }, [navigate]);
 
-    // Filter applications based on selected leaveStatus and search query
-    const filteredApplications = applications.filter(app => {
-        const matchesStatus = leaveStatus === "All" || app.status === leaveStatus;
-        const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            app.designation.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesStatus && matchesSearch;
+  // Helper function to format dates
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
+  };
 
-    // Handle viewing details of an application
-    const handleViewDetails = (application) => {
-        setSelectedApplication(application);
-        setShowDetailsModal(true);
+  // Calculate status information for an application
+  const getStatusInfo = (app) => {
+    const steps = [
+      {
+        name: "Supervisor Approval",
+        completed: app.action1Completed,
+        description: app.action1Completed ? 
+          `Approved on ${formatDate(app.action1Date)}` : 
+          "Pending supervisor review",
+        icon: "📝",
+        status: app.action1?.recommendation || "Pending"
+      },
+      {
+        name: "Department Head Approval",
+        completed: app.action2Completed,
+        description: app.action2Completed ? 
+          `Approved on ${formatDate(app.action2Date)}` : 
+          "Pending department head review",
+        icon: "👔",
+        status: app.action2?.allowedByHead || "Pending"
+      },
+      {
+        name: "HR Final Approval",
+        completed: app.action3Completed,
+        description: app.action3Completed ? 
+          `Approved on ${formatDate(app.action3Date)}` : 
+          "Pending HR final approval",
+        icon: "✅",
+        status: app.action3?.finalApproval || "Pending"
+      }
+    ];
+
+    const completedSteps = steps.filter(step => step.completed).length;
+    const percentage = Math.floor((completedSteps / steps.length) * 100);
+    const currentStep = steps.findIndex(step => !step.completed) + 1 || steps.length + 1;
+    const isComplete = completedSteps === steps.length;
+
+    return {
+      steps,
+      percentage,
+      currentStep,
+      isComplete,
+      overallStatus: isComplete ? "Approved" : 
+                    completedSteps > 0 ? "In Progress" : "Submitted"
     };
+  };
 
-    // Handle taking action on an application
-    const handleTakeAction = (application, action) => {
-        setSelectedApplication(application);
-        setActionStep(action);
+  // View application details
+  const handleViewDetails = (app) => {
+    setSelectedApp(app);
+    setShowModal(true);
+  };
 
-        // Show the correct modal based on action
-        if (action === 1) {
-            setShowActionModal1(true);
-        } else if (action === 2) {
-            setShowActionModal2(true);
-        } else if (action === 3) {
-            setShowActionModal3(true);
-        }
-    };
+  // Download approved application
+  const handleDownload = async (app) => {
+    try {
+      // In a real implementation, this would generate a PDF
+      // For now, we'll just show an alert
+      alert(`Downloading leave application for ${app.name}`);
+      
+      // This would be the actual implementation:
+      // const response = await axios.get(
+      //   `http://localhost:8093/leave-applications/${app._id}/download`,
+      //   { responseType: 'blob' }
+      // );
+      // const url = window.URL.createObjectURL(new Blob([response.data]));
+      // const link = document.createElement('a');
+      // link.href = url;
+      // link.setAttribute('download', `leave-application-${app._id}.pdf`);
+      // document.body.appendChild(link);
+      // link.click();
+    } catch (err) {
+      console.error("Error downloading application:", err);
+      alert("Failed to download application. Please try again.");
+    }
+  };
 
-    // Handle submission for Action 1
-    const handleSubmit1 = async () => {
-        if (!selectedApplication) return;
-
-        const applicationId = selectedApplication._id;
-
-        if (actionStatus[applicationId]?.isCompleted1) return; // Prevent multiple submissions
-
-        const formData = new FormData();
-        formData.append('recommendation', recommendation);
-        formData.append('supervisingOfficerName', supervisingOfficerName);
-        formData.append('role', role);
-        if (signature1) formData.append('signature1', signature1);
-
-        try {
-            await axios.post('http://localhost:8093/Take_Actions1/add', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
-            // Update the state for the specific application
-            setActionStatus(prevState => ({
-                ...prevState,
-                [applicationId]: {
-                    ...prevState[applicationId],
-                    isCompleted1: true,
-                    completedActions: (prevState[applicationId]?.completedActions || 0) + 1,
-                },
-            }));
-        } catch (error) {
-            console.error('Error submitting the form:', error);
-        }
-    };
-
-    // Progress Bar Component
-    const ProgressBar = ({ progress }) => {
-        return (
-            <div style={{ width: '100%', backgroundColor: '#e0e0e0', borderRadius: '5px', overflow: 'hidden' }}>
-                <div
-                    style={{
-                        width: `${progress}%`,
-                        backgroundColor: progress === 100 ? '#4caf50' : '#2196f3',
-                        height: '10px',
-                        borderRadius: '5px',
-                        transition: 'width 0.3s ease',
-                    }}
-                />
-            </div>
-        );
-    };
-
-    // Status Badge Component
-    const StatusBadge = ({ status }) => {
-        let badgeColor = '';
-        switch (status) {
-            case 'Pending':
-                badgeColor = 'warning';
-                break;
-            case 'Completed':
-                badgeColor = 'success';
-                break;
-            default:
-                badgeColor = 'secondary';
-        }
-        return <Badge bg={badgeColor}>{status}</Badge>;
-    };
-
-    // Application Row Component
-    const ApplicationRow = ({ app, actionStatus, handleTakeAction }) => {
-        const progress = (actionStatus[app._id]?.completedActions || 0) * 33.33; // 33.33% per action
-        return (
-            <tr key={app._id}>
-                <td>{app.name}</td>
-                <td>{app.designation}</td>
-                <td>
-                    <ProgressBar progress={progress} />
-                    <small>{Math.round(progress)}% completed</small>
-                </td>
-                <td>
-                    <StatusBadge status={actionStatus[app._id]?.isCompleted1 ? 'Completed' : 'Pending'} /> Action 1
-                    <br />
-                    <StatusBadge status={actionStatus[app._id]?.isCompleted2 ? 'Completed' : 'Pending'} /> Action 2
-                    <br />
-                    <StatusBadge status={actionStatus[app._id]?.isCompleted3 ? 'Completed' : 'Pending'} /> Action 3
-                </td>
-                <td>
-                    <Button
-                        variant="success"
-                        className="me-2"
-                        onClick={() => handleTakeAction(app, 1)}
-                        disabled={actionStatus[app._id]?.isCompleted1}
-                    >
-                        Action 1
-                    </Button>
-                    <Button
-                        variant="warning"
-                        className="me-2"
-                        onClick={() => handleTakeAction(app, 2)}
-                        disabled={actionStatus[app._id]?.isCompleted2}
-                    >
-                        Action 2
-                    </Button>
-                    <Button
-                        variant="danger"
-                        className="me-2"
-                        onClick={() => handleTakeAction(app, 3)}
-                        disabled={actionStatus[app._id]?.isCompleted3}
-                    >
-                        Action 3
-                    </Button>
-                </td>
-            </tr>
-        );
-    };
-
+  // Loading state
+  if (loading) {
     return (
-        <div className="container mt-5">
-            <h2 className="mb-4">View Leave Applications by Date</h2>
-            <Form.Group controlId="date">
-                <Form.Label>Select Date:</Form.Label>
-                <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </Form.Group>
-            <Form.Group controlId="leaveStatus" className="mt-3">
-                <Form.Label>Status:</Form.Label>
-                <Form.Control as="select" value={leaveStatus} onChange={(e) => setLeaveStatus(e.target.value)}>
-                    <option>All</option>
-                    <option>Approved</option>
-                    <option>Rejected</option>
-                </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="searchQuery" className="mt-3">
-                <Form.Label>Search:</Form.Label>
-                <Form.Control
-                    type="text"
-                    placeholder="Search by name or designation"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </Form.Group>
-            <Button className="mt-3" variant="primary" onClick={fetchApplicationsByDate} disabled={isLoading}>
-                {isLoading ? <Spinner animation="border" size="sm" /> : "Fetch Applications"}
-            </Button>
-
-            {/* Desktop View */}
-            <div className="d-none d-md-block">
-                <Table striped bordered hover responsive className="mt-4">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Designation</th>
-                            <th>Progress</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredApplications.map(app => (
-                            <ApplicationRow
-                                key={app._id}
-                                app={app}
-                                actionStatus={actionStatus}
-                                handleTakeAction={handleTakeAction}
-                            />
-                        ))}
-                    </tbody>
-                </Table>
-            </div>
-
-            {/* Mobile View */}
-            <div className="d-block d-md-none">
-                {filteredApplications.map(app => (
-                    <Card key={app._id} className="mb-3">
-                        <Card.Body>
-                            <Card.Title>{app.name}</Card.Title>
-                            <Card.Text>{app.designation}</Card.Text>
-                            <ProgressBar progress={(actionStatus[app._id]?.completedActions || 0) * 33.33} />
-                            <div className="mt-2">
-                                <StatusBadge status={actionStatus[app._id]?.isCompleted1 ? 'Completed' : 'Pending'} /> Action 1
-                                <br />
-                                <StatusBadge status={actionStatus[app._id]?.isCompleted2 ? 'Completed' : 'Pending'} /> Action 2
-                                <br />
-                                <StatusBadge status={actionStatus[app._id]?.isCompleted3 ? 'Completed' : 'Pending'} /> Action 3
-                            </div>
-                            <div className="mt-2">
-                                <Button
-                                    variant="success"
-                                    className="me-2"
-                                    onClick={() => handleTakeAction(app, 1)}
-                                    disabled={actionStatus[app._id]?.isCompleted1}
-                                >
-                                    Action 1
-                                </Button>
-                                <Button
-                                    variant="warning"
-                                    className="me-2"
-                                    onClick={() => handleTakeAction(app, 2)}
-                                    disabled={actionStatus[app._id]?.isCompleted2}
-                                >
-                                    Action 2
-                                </Button>
-                                <Button
-                                    variant="danger"
-                                    className="me-2"
-                                    onClick={() => handleTakeAction(app, 3)}
-                                    disabled={actionStatus[app._id]?.isCompleted3}
-                                >
-                                    Action 3
-                                </Button>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                ))}
-            </div>
-            {/*............................ For Footer................................................ */}
-    <Footer/>
-        </div>
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <Spinner animation="border" variant="primary" />
+      </div>
     );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Container className="my-5">
+        <Alert variant="danger">{error}</Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <div className="container-fluid p-0">
+      {/* Header */}
+      <div className="row1 mb-0">
+        <div className="col-sm-12 p-0">
+          <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
+            <div className="col-sm-8">
+              <div className="h6">
+                <div className="contact-info d-flex align-items-center">
+                  <img src={Icon1} className="icon" alt="Website link" />
+                  <span className="email">info@smartLeave.com</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-sm-3">
+              <div className="button-container ml-auto">
+                <Button 
+                  onClick={() => navigate("/Login")} 
+                  variant="btn btn-warning twinkle-button" 
+                  className="mx-2 small-button main-button"
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  onClick={logout} 
+                  variant="warning" 
+                  className="mx-2 small-button main-button"
+                >
+                  Log Out
+                </Button>
+              </div>
+            </div>
+
+            <div className="col-sm-1">
+              <div className="icon-container">
+                <img src={Icon2} className="icon2" alt="Website link" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <NavBar />
+
+      {logoutMessage && (
+        <Alert variant="success" className="mb-0">
+          {logoutMessage}
+        </Alert>
+      )}
+
+      <Container className="my-5">
+        <h2 className="text-center mb-4" style={{ color: '#053e34' }}>My Leave Applications</h2>
+        
+        {applications.length === 0 ? (
+          <Card className="text-center p-4">
+            <Card.Body>
+              <Card.Title>No Leave Applications Found</Card.Title>
+              <Card.Text>
+                You haven't submitted any leave applications yet.
+              </Card.Text>
+              <Button 
+                variant="primary" 
+                onClick={() => navigate('/apply-leave')}
+                style={{ backgroundColor: '#053e34', borderColor: '#053e34' }}
+              >
+                Apply for Leave
+              </Button>
+            </Card.Body>
+          </Card>
+        ) : (
+          <Row className="g-4">
+            {applications.map((app) => {
+              const status = getStatusInfo(app);
+              
+              return (
+                <Col key={app._id} xs={12} md={6} lg={4}>
+                  <Card className="h-100 shadow-sm">
+                    <Card.Header 
+                      style={{ 
+                        backgroundColor: status.isComplete ? '#053e34' : '#6c757d',
+                        color: 'white'
+                      }}
+                    >
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span>
+                          {formatDate(app.commenceLeaveDate)} to {formatDate(app.resumeDutiesDate)}
+                        </span>
+                        <Badge bg={status.isComplete ? "success" : "warning"}>
+                          {status.overallStatus}
+                        </Badge>
+                      </div>
+                    </Card.Header>
+                    <Card.Body>
+                      <div className="mb-3">
+                        <ProgressBar 
+                          now={status.percentage} 
+                          label={`${status.percentage}%`}
+                          variant={status.isComplete ? "success" : "primary"}
+                          striped
+                          animated={!status.isComplete}
+                        />
+                      </div>
+                      
+                      {status.steps.map((step, index) => (
+                        <div 
+                          key={index}
+                          className={`status-step ${step.completed ? 'completed' : ''} ${index + 1 > status.currentStep ? 'future' : ''}`}
+                        >
+                          <div className="step-icon">{step.icon}</div>
+                          <div className="step-content">
+                            <h5>{step.name}</h5>
+                            <p>{step.description}</p>
+                            <small className="text-muted">Status: {step.status}</small>
+                          </div>
+                        </div>
+                      ))}
+                    </Card.Body>
+                    <Card.Footer className="bg-transparent border-top-0">
+                      <div className="d-flex justify-content-between">
+                        <Button 
+                          variant="outline-info" 
+                          size="sm"
+                          onClick={() => handleViewDetails(app)}
+                        >
+                          View Details
+                        </Button>
+                        {status.isComplete ? (
+                          <Button 
+                            variant="success" 
+                            size="sm"
+                            onClick={() => handleDownload(app)}
+                          >
+                            Download Approved
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm"
+                            disabled
+                          >
+                            Pending Approval
+                          </Button>
+                        )}
+                      </div>
+                    </Card.Footer>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        )}
+      </Container>
+
+      {/* Application Details Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Modal.Header closeButton style={{ backgroundColor: '#053e34', color: 'white' }}>
+          <Modal.Title>Leave Application Details</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedApp && (
+            <div className="application-details">
+              <Row>
+                <Col md={6}>
+                  <h5>Personal Information</h5>
+                  <p><strong>Name:</strong> {selectedApp.name}</p>
+                  <p><strong>Designation:</strong> {selectedApp.designation}</p>
+                  <p><strong>Sub Designation:</strong> {selectedApp.subDesignation}</p>
+                  <p><strong>Ministry:</strong> {selectedApp.ministry}</p>
+                  <p><strong>First Appointment:</strong> {formatDate(selectedApp.firstAppointmentDate)}</p>
+                </Col>
+                <Col md={6}>
+                  <h5>Leave Details</h5>
+                  <p><strong>Leave Period:</strong> {formatDate(selectedApp.commenceLeaveDate)} to {formatDate(selectedApp.resumeDutiesDate)}</p>
+                  <p><strong>Casual Leave:</strong> {selectedApp.leaveDaysC} days</p>
+                  <p><strong>Vacation Leave:</strong> {selectedApp.leaveDaysV} days</p>
+                  <p><strong>Other Leave:</strong> {selectedApp.leaveDaysO} days</p>
+                  <p><strong>Reason:</strong> {selectedApp.reasonForLeave}</p>
+                </Col>
+              </Row>
+              <Row className="mt-3">
+                <Col md={6}>
+                  <h5>Applicant Signature</h5>
+                  <Image
+                    src={selectedApp.applicantSignature ? 
+                      `http://localhost:8093/uploads_LeaveApplicant/${selectedApp.applicantSignature}` : 
+                      'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                    alt="Applicant Signature"
+                    fluid
+                    className="signature-image"
+                  />
+                </Col>
+                <Col md={6}>
+                  <h5>Acting Officer Signature</h5>
+                  <Image
+                    src={selectedApp.officerActingSignature ? 
+                      `http://localhost:8093/uploads_LeaveApplicant/${selectedApp.officerActingSignature}` : 
+                      'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                    alt="Officer Acting Signature"
+                    fluid
+                    className="signature-image"
+                  />
+                </Col>
+              </Row>
+              
+              {/* Approval Details */}
+              <div className="mt-4">
+                <h5>Approval Progress</h5>
+                {selectedApp.action1 && (
+                  <div className="approval-detail mb-3">
+                    <h6>Supervisor Approval</h6>
+                    <p><strong>Recommendation:</strong> {selectedApp.action1.recommendation}</p>
+                    <p><strong>Officer:</strong> {selectedApp.action1.supervisingOfficerName}</p>
+                    <p><strong>Date:</strong> {formatDate(selectedApp.action1.date1)}</p>
+                    <Image
+                      src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions1/${selectedApp.action1.signature1}`}
+                      alt="Supervisor Signature"
+                      fluid
+                      className="approval-signature"
+                    />
+                  </div>
+                )}
+                
+                {selectedApp.action2 && (
+                  <div className="approval-detail mb-3">
+                    <h6>Department Head Approval</h6>
+                    <p><strong>Decision:</strong> {selectedApp.action2.allowedByHead}</p>
+                    <p><strong>Officer:</strong> {selectedApp.action2.headOfDepartmentName}</p>
+                    <p><strong>Date:</strong> {formatDate(selectedApp.action2.date2)}</p>
+                    <Image
+                      src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions2/${selectedApp.action2.signature2}`}
+                      alt="Department Head Signature"
+                      fluid
+                      className="approval-signature"
+                    />
+                  </div>
+                )}
+                
+                {selectedApp.action3 && (
+                  <div className="approval-detail">
+                    <h6>HR Final Approval</h6>
+                    <p><strong>Decision:</strong> {selectedApp.action3.finalApproval}</p>
+                    <p><strong>Clerk:</strong> {selectedApp.action3.leaveClerkName}</p>
+                    <p><strong>Date:</strong> {formatDate(selectedApp.action3.date3)}</p>
+                    <Image
+                      src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions3/${selectedApp.action3.signature3}`}
+                      alt="HR Signature"
+                      fluid
+                      className="approval-signature"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowModal(false)}
+          >
+            Close
+          </Button>
+          {selectedApp && getStatusInfo(selectedApp).isComplete && (
+            <Button 
+              variant="primary"
+              style={{ backgroundColor: '#053e34', borderColor: '#053e34' }}
+              onClick={() => handleDownload(selectedApp)}
+            >
+              Download Approved Application
+            </Button>
+          )}
+        </Modal.Footer>
+      </Modal>
+
+      <Footer />
+    </div>
+  );
 }
 
-export default LeaveApplicationsByDate;
+export default LeaveStatus;
