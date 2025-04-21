@@ -38,3 +38,26 @@
         display: none !important;
     }
 }
+
+/* In your CSS file */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #pdf-content, #pdf-content * {
+        visibility: visible;
+    }
+    #pdf-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+
+/* Ensure signatures are properly sized in PDF */
+.signature-img {
+    max-height: 80px !important;
+    width: auto !important;
+}
+

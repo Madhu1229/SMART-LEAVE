@@ -241,47 +241,54 @@ function LeaveApplicationsByDate() {
                 return;
             }
     
+            // Get signature as data URL
             const signatureDataUrl = sigCanvas.current.toDataURL('image/png');
-            if (!signatureDataUrl) {
-                alert("Could not process the signature. Please try again.");
-                return;
-            }
-
-            const signature = await fetch(signatureDataUrl).then(res => res.blob());
-            if (!signature) {
-                alert("Failed to process signature. Please try again.");
-                return;
-            }
+            
+            // Convert data URL to blob
+            const response = await fetch(signatureDataUrl);
+            const signatureBlob = await response.blob();
     
             const formData = new FormData();
             formData.append('recommendation', recommendation);
             formData.append('supervisingOfficerName', supervisingOfficerName);
             formData.append('role', role);
-            formData.append('signature1', signature, 'signature.png');
+            formData.append('signature1', signatureBlob, 'signature.png');
+            formData.append('applicationId', applicationId);
     
-            await axios.post('http://localhost:8093/Take_Actions1/add', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            // First submit the action data
+            const actionResponse = await axios.post(
+                'http://localhost:8093/Take_Actions1/add', 
+                formData, 
+                {
+                    headers: { 
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
     
-
-           // Then send notification
-        const member = membersData.find(m => 
-            m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
-        );
-        
-        if (member && member.email) {
-            await axios.post('http://localhost:8093/api/notifications/send-leave-notification', {
-                application: selectedApplication,
-                actionDetails: {
-                    actionNumber: 1,
-                    actionName: "Supervising Officer Recommendation",
-                    status: recommendation === "Recommended" ? "Approved" : "Rejected",
-                    processedBy: supervisingOfficerName,
-                    comments: recommendation
-                },
-                applicantEmail: member.email
-            });
-        }
+            // Then send notification if needed
+            try {
+                const member = membersData.find(m => 
+                    m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
+                );
+                
+                if (member && member.email) {
+                    await axios.post('http://localhost:8093/api/send-notification', { // Adjusted endpoint
+                        application: selectedApplication,
+                        actionDetails: {
+                            actionNumber: 1,
+                            actionName: "Supervising Officer Recommendation",
+                            status: recommendation === "Recommended" ? "Approved" : "Rejected",
+                            processedBy: supervisingOfficerName,
+                            comments: recommendation
+                        },
+                        applicantEmail: member.email
+                    });
+                }
+            } catch (notificationError) {
+                console.warn("Notification failed, but action was recorded:", notificationError);
+            }
+    
             const updatedStatus = {
                 ...actionStatus,
                 [applicationId]: {
@@ -298,7 +305,7 @@ function LeaveApplicationsByDate() {
             fetchApplicationsByDate();
         } catch (error) {
             console.error('Error submitting the form:', error);
-            alert("An error occurred. Please check the console for details.");
+            alert(`An error occurred: ${error.response?.data?.message || error.message}`);
         }
     };
 

@@ -231,57 +231,64 @@ function LeaveApplicationsByDate() {
         }
     
         try {
+            // Validate signature
             if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
                 alert("Please provide a signature");
                 return;
             }
     
+            // Get signature as data URL and convert to blob
             const signatureDataUrl = sigCanvas.current.toDataURL('image/png');
-            if (!signatureDataUrl) {
-                alert("Could not process the signature. Please try again.");
-                return;
-            }
-
-            const signature = await fetch(signatureDataUrl).then(res => res.blob());
-            if (!signature) {
-                alert("Failed to process signature. Please try again.");
-                return;
-            }
+            const signatureBlob = await fetch(signatureDataUrl).then(res => res.blob());
     
+            // Prepare form data
             const formData = new FormData();
             formData.append('allowedByHead', allowedByHead);
             formData.append('headOfDepartmentName', headOfDepartmentName);
             formData.append('role', role);
-            formData.append('signature2', signature, 'signature.png');
+            formData.append('signature2', signatureBlob, 'signature.png');
+            formData.append('applicationId', applicationId); // Important for backend reference
     
-            await axios.post('http://localhost:8093/Take_Actions2/add', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-
-            // Then send notification
-        const member = membersData.find(m => 
-            m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
-        );
-        
-        if (member && member.email) {
-            await axios.post('http://localhost:8093/api/notifications/send-leave-notification', {
-                application: selectedApplication,
-                actionDetails: {
-                    actionNumber: 2,
-                    actionName: "Head of Department Recommendation",
-                    status: allowedByHead === "Recommended" ? "Approved" : "Rejected",
-                    processedBy: headOfDepartmentName,
-                    comments: allowedByHead
-                },
-                applicantEmail: member.email
-            });
-        }
+            // Submit action data
+            const actionResponse = await axios.post(
+                'http://localhost:8093/Take_Actions2/add', 
+                formData, 
+                {
+                    headers: { 
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
     
+            // Send notification (wrapped in try-catch to not fail entire process if notification fails)
+            try {
+                const member = membersData.find(m => 
+                    m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
+                );
+                
+                if (member && member.email) {
+                    await axios.post('http://localhost:8093/api/send-notification', { // Changed endpoint
+                        application: selectedApplication,
+                        actionDetails: {
+                            actionNumber: 2,
+                            actionName: "Head of Department Recommendation",
+                            status: allowedByHead === "Recommended" ? "Approved" : "Rejected",
+                            processedBy: headOfDepartmentName,
+                            comments: allowedByHead
+                        },
+                        applicantEmail: member.email
+                    });
+                }
+            } catch (notificationError) {
+                console.warn("Notification failed, but action was recorded:", notificationError);
+            }
+    
+            // Update UI state
             const updatedStatus = {
                 ...actionStatus,
                 [applicationId]: {
-                    ...actionStatus[applicationId],
-                    message2: 'Action 2 was Successfully completed',
+                    ...actionStatus[applicationId], // Preserve existing status if any
+                    message2: 'Action 2 was successfully completed',
                     isCompleted2: true,
                 }
             };
@@ -289,15 +296,20 @@ function LeaveApplicationsByDate() {
             setActionStatus(updatedStatus);
             localStorage.setItem("actionStatus", JSON.stringify(updatedStatus));
     
+            // Reset and refresh
             setShowActionModal2(false);
             resetForm();
             fetchApplicationsByDate();
+    
         } catch (error) {
-            console.error('Error submitting the form:', error);
-            alert("An error occurred. Please check the console for details.");
+            console.error('Error submitting Action 2:', {
+                error: error.response?.data || error.message,
+                config: error.config
+            });
+            alert(`Error submitting form: ${error.response?.data?.message || error.message}`);
         }
     };
-
+    
     // Reset form
     const resetForm = () => {
         setallowedByHead("");
