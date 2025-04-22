@@ -248,11 +248,15 @@ function LeaveApplicationsByDate() {
             const response = await fetch(signatureDataUrl);
             const signatureBlob = await response.blob();
     
+            // Generate unique filename with timestamp and application ID
+            const timestamp = new Date().getTime();
+            const signatureFilename = `signature_${applicationId}_${timestamp}.png`;
+    
             const formData = new FormData();
             formData.append('recommendation', recommendation);
             formData.append('supervisingOfficerName', supervisingOfficerName);
             formData.append('role', role);
-            formData.append('signature1', signatureBlob, 'signature.png');
+            formData.append('signature1', signatureBlob, signatureFilename); // Use unique filename
             formData.append('applicationId', applicationId);
     
             // First submit the action data
@@ -273,7 +277,7 @@ function LeaveApplicationsByDate() {
                 );
                 
                 if (member && member.email) {
-                    await axios.post('http://localhost:8093/api/send-notification', { // Adjusted endpoint
+                    await axios.post('http://localhost:8093/api/send-notification', {
                         application: selectedApplication,
                         actionDetails: {
                             actionNumber: 1,

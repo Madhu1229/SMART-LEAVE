@@ -266,6 +266,14 @@ app.use("/auth", auth);
 app.use("/leaveNotifications",leaveNotificationsRouter)
 
 
+// const express = require('express');
+
+// const path = require('path');
+
+// Allow access to static files in uploads_TakeActions
+app.use('/uploads_TakeActions/uploads_TakeActions1', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions1')));
+app.use('/uploads_TakeActions/uploads_TakeActions2', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions2')));
+app.use('/uploads_TakeActions/uploads_TakeActions3', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions3')));
 
 
 // Start the server
@@ -274,6 +282,8 @@ app.listen(PORT, () => {
   googleAuth(passport);
   routesInit(app,passport)
 });
+
+
 
 // const leaveNotificationRoutes = require('./routes/leaveNotifications');
 // app.use('/api/notifications', leaveNotificationRoutes);

@@ -315,37 +315,67 @@ if (member && member.email) {
         }
     
         try {
+            // Validate signature
             if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
                 alert("Please provide a signature");
                 return;
             }
     
+            // Get signature as data URL and convert to blob
             const signatureDataUrl = sigCanvas.current.toDataURL('image/png');
-            if (!signatureDataUrl) {
-                alert("Could not process the signature. Please try again.");
-                return;
-            }
-
-            const signature = await fetch(signatureDataUrl).then(res => res.blob());
-            if (!signature) {
-                alert("Failed to process signature. Please try again.");
-                return;
-            }
+            const signatureBlob = await fetch(signatureDataUrl).then(res => res.blob());
     
+            // Generate unique filename with timestamp and application ID
+            const timestamp = new Date().getTime();
+            const signatureFilename = `signature3_${applicationId}_${timestamp}.png`;
+    
+            // Prepare form data
             const formData = new FormData();
             formData.append('finalApproval', finalApproval);
             formData.append('leaveClerkName', leaveClerkName);
             formData.append('role', role);
-            formData.append('signature3', signature, 'signature.png');
+            formData.append('signature3', signatureBlob, signatureFilename); // Use unique filename
+            formData.append('applicationId', applicationId);
     
-            await axios.post('http://localhost:8093/Take_Actions3/add', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            // Submit action data
+            await axios.post(
+                'http://localhost:8093/Take_Actions3/add', 
+                formData, 
+                {
+                    headers: { 
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
     
+            // Send notification if needed
+            try {
+                const member = membersData.find(m => 
+                    m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
+                );
+                
+                if (member && member.email) {
+                    await axios.post('http://localhost:8093/api/send-notification', {
+                        application: selectedApplication,
+                        actionDetails: {
+                            actionNumber: 3,
+                            actionName: "Final Approval",
+                            status: finalApproval === "Approved" ? "Approved" : "Rejected",
+                            processedBy: leaveClerkName,
+                            comments: finalApproval
+                        },
+                        applicantEmail: member.email
+                    });
+                }
+            } catch (notificationError) {
+                console.warn("Notification failed, but action was recorded:", notificationError);
+            }
+    
+            // Update UI state
             const updatedStatus = {
                 ...actionStatus,
                 [applicationId]: {
-                    ...actionStatus[applicationId],
+                    ...actionStatus[applicationId], // Preserve existing status
                     message3: 'Action 3 was successfully completed',
                     isCompleted3: true,
                 }
@@ -354,15 +384,19 @@ if (member && member.email) {
             setActionStatus(updatedStatus);
             localStorage.setItem("actionStatus", JSON.stringify(updatedStatus));
     
+            // Reset and refresh
             setShowActionModal3(false);
             resetForm();
             fetchApplicationsByDate();
         } catch (error) {
-            console.error('Error submitting the form:', error);
-            alert("An error occurred. Please check the console for details.");
+            console.error('Error submitting Action 3:', {
+                error: error.response?.data || error.message,
+                config: error.config
+            });
+            alert(`Error submitting form: ${error.response?.data?.message || error.message}`);
         }
     };
-
+    
     // Reset form
     const resetForm = () => {
         setFinalApproval("");

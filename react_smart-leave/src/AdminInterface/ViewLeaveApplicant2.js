@@ -241,13 +241,17 @@ function LeaveApplicationsByDate() {
             const signatureDataUrl = sigCanvas.current.toDataURL('image/png');
             const signatureBlob = await fetch(signatureDataUrl).then(res => res.blob());
     
+            // Generate unique filename with timestamp and application ID
+            const timestamp = new Date().getTime();
+            const signatureFilename = `signature2_${applicationId}_${timestamp}.png`;
+    
             // Prepare form data
             const formData = new FormData();
             formData.append('allowedByHead', allowedByHead);
             formData.append('headOfDepartmentName', headOfDepartmentName);
             formData.append('role', role);
-            formData.append('signature2', signatureBlob, 'signature.png');
-            formData.append('applicationId', applicationId); // Important for backend reference
+            formData.append('signature2', signatureBlob, signatureFilename); // Use unique filename
+            formData.append('applicationId', applicationId);
     
             // Submit action data
             const actionResponse = await axios.post(
@@ -267,7 +271,7 @@ function LeaveApplicationsByDate() {
                 );
                 
                 if (member && member.email) {
-                    await axios.post('http://localhost:8093/api/send-notification', { // Changed endpoint
+                    await axios.post('http://localhost:8093/api/send-notification', {
                         application: selectedApplication,
                         actionDetails: {
                             actionNumber: 2,
@@ -309,7 +313,7 @@ function LeaveApplicationsByDate() {
             alert(`Error submitting form: ${error.response?.data?.message || error.message}`);
         }
     };
-    
+
     // Reset form
     const resetForm = () => {
         setallowedByHead("");

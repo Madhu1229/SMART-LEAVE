@@ -3,6 +3,7 @@ import Take_Actions3 from "../models/Take_Actions3.js";
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from "mongoose";
 
 //matching 2 data collections...
 import Member from "../models/Member.js";
@@ -279,5 +280,55 @@ router.get("/getByDate", async (req, res) => {
 });
 
 
+// router.get('/Take_Actions3/get-by-leave-id/:id', controller.getAction3ByLeaveId);
+router.get("/get/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // ✅ Validate MongoDB ObjectId
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ 
+                success: false,
+                message: "Invalid ID format",
+                error: "The provided leave application ID is not a valid MongoDB ObjectId" 
+            });
+        }
+
+        // ✅ Find action by leave application ID
+        const action = await Take_Actions3.findById(id).lean();
+
+        if (!action) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Action record not found",
+                error: "No action found for the provided leave application ID",
+                data: null // Explicitly set null for clarity
+            });
+        }
+
+        // ✅ Format date fields to ISO string
+        const formattedAction = {
+            ...action,
+            date3: action.date3 ? new Date(action.date3).toISOString() : null,
+            // Add other date fields if they exist in your model
+            createdAt: action.createdAt ? new Date(action.createdAt).toISOString() : null,
+            updatedAt: action.updatedAt ? new Date(action.updatedAt).toISOString() : null
+        };
+
+        res.status(200).json({ 
+            success: true,
+            message: "Action retrieved successfully",
+            data: formattedAction
+        });
+    } catch (err) {
+        console.error('Error in /get-by-leave-id/:id:', err);
+        res.status(500).json({ 
+            success: false,
+            message: "Internal server error while fetching action",
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+    }
+});
 
 export default router;

@@ -4,6 +4,7 @@ import Member from "../models/Member.js"; // Import the Member model
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from "mongoose";
 
 // Define __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -119,5 +120,53 @@ router.get('/uploads_TakeActions/uploads_TakeActions1/:filename', (req, res) => 
         }
     });
 });
+
+
+
+// In your backend routes
+router.get("/get/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid ID format"
+        });
+      }
+  
+      // ✅ Changed to findById (uses _id field)
+      const action = await Take_Actions1.findById(id).lean();
+  
+      if (!action) {
+        return res.status(404).json({ 
+          success: false,
+          message: "Action record not found",
+          data: null
+        });
+      }
+  
+      res.status(200).json({ 
+        success: true,
+        data: action
+      });
+    } catch (err) {
+      res.status(500).json({ 
+        success: false,
+        error: err.message 
+      });
+    }
+  });
+  
+// ✅ Global error handler (keep this after all other routes)
+router.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: err.message
+    });
+});
+
 
 export default router;

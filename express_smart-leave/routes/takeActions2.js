@@ -1,5 +1,6 @@
 import express from "express";
 import Take_Actions2 from "../models/Take_Actions2.js";
+import mongoose from "mongoose";
 
 //matching 2 data collections...
 import Member from "../models/Member.js";
@@ -202,7 +203,7 @@ router.post("/add", upload.fields([
 // API Endpoint to match supervisingOfficerName and role with fullName and role in Member collection
 router.get("/match-members", async (req, res) => {
     try {
-        // Fetch all Take_Actions1 records
+        // Fetch all Take_Actions2 records
         const takeActions = await Take_Actions2.find();
 
         // Fetch all Member records
@@ -215,7 +216,7 @@ router.get("/match-members", async (req, res) => {
             memberMap.set(key, member);
         });
 
-        // Match Take_Actions1 records with Member records
+        // Match Take_Actions2 records with Member records
         const matchedData = takeActions.map(action => {
             const key = `${action.headOfDepartmentName}|${action.role}`;
             const matchedMember = memberMap.get(key);
@@ -249,5 +250,41 @@ router.get('/uploads_TakeActions/uploads_TakeActions2:filename', (req, res) => {
     });
 });
 
+// router.get('/Take_Actions2/get-by-leave-id/:id', controller.getAction2ByLeaveId); 
+
+
+router.get("/get/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid ID format"
+        });
+      }
+  
+      // ✅ Changed to findById (uses _id field)
+      const action = await Take_Actions2.findById(id).lean();
+  
+      if (!action) {
+        return res.status(404).json({ 
+          success: false,
+          message: "Action record not found",
+          data: null
+        });
+      }
+  
+      res.status(200).json({ 
+        success: true,
+        data: action
+      });
+    } catch (err) {
+      res.status(500).json({ 
+        success: false,
+        error: err.message 
+      });
+    }
+  });
 
 export default router;
