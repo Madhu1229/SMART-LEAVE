@@ -376,10 +376,126 @@
   top: 50%;  /* Vertically center the icon */
   transform: translateY(-50%);  /* Adjust to perfect vertical alignment */
 }
-/* Reset global margins and paddings */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* Better box model */
+/* Center container for About & Contact sections */
+.centered-sections {
+  display: flex;
+  flex-direction: column; /* stack vertically */
+  align-items: center; /* horizontally center */
+  justify-content: center; /* vertically center if height set, optional */
+  padding: 40px 20px;
+  gap: 40px; /* space between sections */
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
+/* Style for each section box */
+.about-us-section,
+.contact-us-section {
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* Section Title Style */
+.section-title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: var(--accent-color);
+}
+
+/* For better responsiveness */
+@media(max-width: 768px) {
+  .about-us-section,
+  .contact-us-section {
+    padding: 20px;
+  }
+}
+
+
+/* Scrolling Cards Styles */
+.about-contact-container {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 30px 0;
+  background-color: #022B23;
+  margin-top: -8px;
+  position: relative;
+}
+
+.scrolling-cards {
+  display: flex;
+  animation: scrollRightToLeft 30s linear infinite;
+  padding: 10px 0;
+}
+
+.scrolling-cards:hover {
+  animation-play-state: paused;
+}
+
+.card {
+  min-width: 350px;
+  margin: 0 20px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  white-space: normal;
+  transition: transform 0.3s ease;
+  border-left: 5px solid #d4af37;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.card h2 {
+  color: #022B23;
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #d4af37;
+  padding-bottom: 8px;
+}
+
+.card p {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.card ul {
+  padding-left: 20px;
+}
+
+.card li {
+  margin-bottom: 8px;
+  color: #333;
+}
+
+@keyframes scrollRightToLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card {
+    min-width: 280px;
+    margin: 0 15px;
+    padding: 20px;
+  }
+  
+  .about-contact-container {
+    padding: 20px 0;
+  }
+}

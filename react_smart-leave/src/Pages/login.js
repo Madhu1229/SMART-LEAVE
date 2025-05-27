@@ -5,7 +5,6 @@ import './LoginIcon.css';
 import axios from 'axios';
 
 import Footer from './Footer';
-import Button from 'react-bootstrap/Button';
 import { useNavigate } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
 
@@ -72,7 +71,6 @@ export default function Login() {
   const handleLogin = async (event) => {
     event.preventDefault();
     const loginData = { email, password };
-    
     try {
       const response = await axios.post('http://localhost:8093/auth/login', loginData);
       const result = response.data;
@@ -98,6 +96,7 @@ export default function Login() {
 
   return (
     <div className={`p-0 m-0 ${showLoginModal ? 'modal-open' : ''}`}>
+      
       {/* Blur overlay when modal is open */}
       {showLoginModal && <div className="modal-backdrop fade show" style={{ backdropFilter: 'blur(5px)' }}></div>}
 
@@ -166,7 +165,7 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Floating Sign In Button - Now positioned relative to carousel */}
+        {/* Sign In Button overlay */}
         <div className="d-flex justify-content-center w-100" style={{
           position: 'absolute',
           bottom: '20px',
@@ -189,6 +188,59 @@ export default function Login() {
           >
             Sign In
           </button>
+        </div>
+      </div>
+
+      {/* Scrolling About Us and Contact Us Cards */}
+      <div className="about-contact-container">
+        <div className="scrolling-cards">
+          {/* About Us Card */}
+          <div className="card">
+            <h2>About SMART LEAVE</h2>
+            <p>
+              <strong>SMART LEAVE</strong> is an automated leave management system designed specifically 
+              for the Sri Lanka Army. It simplifies the process of applying for leave, tracking leave 
+              balances, and ensuring timely approval.
+            </p>
+            <p>
+              Developed to reduce paperwork and improve communication, this system streamlines 
+              the entire leave management process.
+            </p>
+            <p><strong>Design Date:</strong> September 2024</p>
+          </div>
+          
+          {/* Contact Us Card */}
+          <div className="card">
+            <h2>Contact Us</h2>
+            <p><strong>Address:</strong> Army Headquarters, Sri Jayawardenepura, Colombo</p>
+            <p><strong>Telephone:</strong> +94112432682-5 / +94766907749</p>
+            <p><strong>Email:</strong> slarmymedia@gmail.com</p>
+            <p><strong>For media inquiries:</strong> dteofmedia&psyops@army.lk</p>
+          </div>
+          
+          {/* Features Card */}
+          <div className="card">
+            <h2>Key Features</h2>
+            <ul>
+              <li>Real-time leave tracking</li>
+              <li>Mobile-friendly interface</li>
+              <li>Automated approval workflows</li>
+              <li>Secure data encryption</li>
+              <li>Multi-level administration</li>
+            </ul>
+          </div>
+          
+          {/* Mission Card */}
+          <div className="card">
+            <h2>Our Mission</h2>
+            <p>
+              To empower Sri Lanka Army personnel with a modern, efficient, and transparent 
+              leave management system that respects their service and dedication.
+            </p>
+            <p className="text-muted">
+              "Designed with care for the defenders of our nation"
+            </p>
+          </div>
         </div>
       </div>
 
