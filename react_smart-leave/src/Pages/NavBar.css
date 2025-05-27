@@ -72,6 +72,9 @@
   flex-direction: column;
   align-items: center;
   text-decoration: none !important;
+  border: 2px solid #053e34; /* Add green border to each button */
+  border-radius: 10px; /* Rounded corners for the button */
+  transition: transform 0.3s ease;
 }
 
 .link-top {
@@ -84,6 +87,7 @@
   border-bottom-left-radius: 0; /* Keep bottom square */
   border-bottom-right-radius: 0; /* Keep bottom square */
 }
+
 .link-text {
   padding: 8px 15px;
   background-color: white;
@@ -103,7 +107,12 @@
 .nav-link-item.active .link-text,
 .nav-link-item:hover .link-text {
   background-color: #f8f9fa;
-  
+}
+
+/* Add a downward movement effect to the active navigation button */
+.nav-link-item.active {
+  transform: translateY(10px); /* Move the button slightly down */
+  border-color: #053e34; /* Change border color on active state */
 }
 
 /* Animations */
@@ -187,7 +196,6 @@
     z-index: 2;
   }
 
-
   .nav-links-container {
     flex-direction: column;
     width: 100%;
@@ -221,3 +229,7 @@
     border-radius: 10px;
   }
 }
+
+
+/* .................. */
+

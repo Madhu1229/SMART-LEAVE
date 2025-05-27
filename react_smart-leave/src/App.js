@@ -24,6 +24,9 @@ import ViewLeaveApplicant3 from './AdminInterface/ViewLeaveApplicant3';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import LeavePDF from './AdminInterface/LeavePDF';
 import leaveNotificationService from './AdminInterface/leaveNotificationService'
+import ResetPasswordForm from './Pages/ResetPasswordForm';
+import MainTitle from './Pages/MainTitle';
+import MainTitleHome from './Pages/MainTitleHome';
 
 function App() {
   return (
@@ -32,7 +35,7 @@ function App() {
     <div>
       <Routes>
 
-      <Route  path="/" element={< Start/>} />
+      <Route  path="/" element={< Login/>} />
       <Route path="/Login" element={< Login />} />
       <Route path="/AboutUs" element={<AboutUs />}/>
       <Route path="/ContactUs" element={<ContactUs />}/>
@@ -53,6 +56,9 @@ function App() {
       <Route path="/ViewLeaveApplicant3" element={<ViewLeaveApplicant3 />}/>
       <Route path="/leaveNotificationService" element={<leaveNotificationService />}/>
       <Route path="/LeavePDF/:id" element={<LeavePDF />}/>
+      <Route path="/ResetPasswordForm" element={<ResetPasswordForm />}/>
+      <Route path="/MainTitle" element={<MainTitle />}/>
+      <Route path="/MainTitleHome" element={<MainTitleHome />}/>
  
       </Routes>
       

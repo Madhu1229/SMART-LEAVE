@@ -6,28 +6,19 @@ import Icon1 from '../Images/Icon1.png';
 import Icon2 from '../Images/Icon2.png';
 import Footer from '../Pages/Footer';
 import { useNavigate } from 'react-router-dom';
-import { Navigate } from 'react-router-dom';
-
 import './LoginIcon.css';
 
-
-
-
-
 function LeaveApplicationsByDate() {
+    const [logoutMessage, setLogoutMessage] = useState('');
+    const navigate = useNavigate();
 
-
-    const [logoutMessage, setLogoutMessage] = useState(''); // State for logout message
-            const navigate = useNavigate(); // Create navigate function
-          
-            function logout() {
-              localStorage.removeItem('token');
-              setLogoutMessage('You have been logged out successfully.'); // Set the logout message
-              setTimeout(() => {
-                window.location.href = '/'; // Redirect to the login page after 3 seconds
-              }, 3000); // Delay the redirect for 3 seconds to show the message
-            }
-
+    function logout() {
+        localStorage.removeItem('token');
+        setLogoutMessage('You have been logged out successfully.');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 3000);
+    }
 
     // State for filters and data
     const [date, setDate] = useState("");
@@ -66,6 +57,24 @@ function LeaveApplicationsByDate() {
         localStorage.setItem("actionStatus", JSON.stringify(actionStatus));
     }, [actionStatus]);
 
+    // Get current date in Sri Lanka timezone (UTC+5:30)
+    const getSriLankaDate = () => {
+        const now = new Date();
+        const offset = 5.5 * 60 * 60 * 1000; // Sri Lanka is UTC+5:30
+        const sriLankaTime = new Date(now.getTime() + offset);
+        return sriLankaTime.toISOString().split('T')[0];
+    };
+
+    // Format date in Sri Lanka format (dd/MM/yyyy)
+    const formatDate = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
+
     // Fetch members data on component mount
     useEffect(() => {
         const fetchMembersData = async () => {
@@ -80,12 +89,27 @@ function LeaveApplicationsByDate() {
         fetchMembersData();
     }, []);
 
+    // Set current date in Sri Lanka timezone on component mount
+    useEffect(() => {
+        const currentDate = getSriLankaDate();
+        setDate(currentDate);
+    }, []);
+
+    // Fetch applications when date changes (including initial load)
+    useEffect(() => {
+        if (date) {
+            fetchApplicationsByDate();
+        }
+    }, [date]);
+
     // Fetch applications by date
     const fetchApplicationsByDate = async () => {
         setIsLoading(true);
         try {
-            const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, { params: { date } });
-            const leaveApplications = response.data.applications;
+            const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, { 
+                params: { date } 
+            });
+            const leaveApplications = response.data.applications || [];
 
             const matchedApplications = leaveApplications.map(app => {
                 const isValid = membersData.find(member => member.fullName === app.name);
@@ -103,9 +127,6 @@ function LeaveApplicationsByDate() {
             setIsLoading(false);
         }
     };
-
-    // Format date
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString();
 
     // Filter applications based on selected leaveStatus and search query
     const filteredApplications = applications.filter(app => {
@@ -126,7 +147,6 @@ function LeaveApplicationsByDate() {
         setSelectedApplication(application);
         setActionStep(action);
 
-        // Show the correct modal based on action
         if (action === 1) {
             setShowActionModal1(true);
         } else if (action === 2) {
@@ -142,7 +162,7 @@ function LeaveApplicationsByDate() {
 
         const applicationId = selectedApplication._id;
 
-        if (actionStatus[applicationId]?.isCompleted1) return; // Prevent multiple submissions
+        if (actionStatus[applicationId]?.isCompleted1) return;
 
         const formData = new FormData();
         formData.append('recommendation', recommendation);
@@ -155,7 +175,6 @@ function LeaveApplicationsByDate() {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            // Update the state for the specific application
             setActionStatus(prevState => ({
                 ...prevState,
                 [applicationId]: {
@@ -164,11 +183,11 @@ function LeaveApplicationsByDate() {
                     completedActions: (prevState[applicationId]?.completedActions || 0) + 1,
                 },
             }));
+            setShowActionModal1(false);
         } catch (error) {
             console.error('Error submitting the form:', error);
         }
     };
-
 
     // Handle submission for Action 2
     const handleSubmit2 = async () => {
@@ -176,7 +195,7 @@ function LeaveApplicationsByDate() {
 
         const applicationId = selectedApplication._id;
 
-        if (actionStatus[applicationId]?.isCompleted2) return; // Prevent multiple submissions
+        if (actionStatus[applicationId]?.isCompleted2) return;
 
         const formData = new FormData();
         formData.append('allowedByHead', allowedByHead);
@@ -189,7 +208,6 @@ function LeaveApplicationsByDate() {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            // Update the state for the specific application
             setActionStatus(prevState => ({
                 ...prevState,
                 [applicationId]: {
@@ -198,6 +216,7 @@ function LeaveApplicationsByDate() {
                     completedActions: (prevState[applicationId]?.completedActions || 0) + 1,
                 },
             }));
+            setShowActionModal2(false);
         } catch (error) {
             console.error('Error submitting the form:', error);
         }
@@ -209,7 +228,7 @@ function LeaveApplicationsByDate() {
 
         const applicationId = selectedApplication._id;
 
-        if (actionStatus[applicationId]?.isCompleted3) return; // Prevent multiple submissions
+        if (actionStatus[applicationId]?.isCompleted3) return;
 
         const formData = new FormData();
         formData.append('finalApproval', finalApproval);
@@ -222,7 +241,6 @@ function LeaveApplicationsByDate() {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            // Update the state for the specific application
             setActionStatus(prevState => ({
                 ...prevState,
                 [applicationId]: {
@@ -231,11 +249,11 @@ function LeaveApplicationsByDate() {
                     completedActions: (prevState[applicationId]?.completedActions || 0) + 1,
                 },
             }));
+            setShowActionModal3(false);
         } catch (error) {
             console.error('Error submitting the form:', error);
         }
     };
-    
 
     // Progress Bar Component
     const ProgressBar = ({ progress }) => {
@@ -272,7 +290,7 @@ function LeaveApplicationsByDate() {
 
     // Application Row Component
     const ApplicationRow = ({ app, actionStatus, handleTakeAction }) => {
-        const progress = (actionStatus[app._id]?.completedActions || 0) * 33.33; // 33.33% per action
+        const progress = (actionStatus[app._id]?.completedActions || 0) * 33.33;
         return (
             <tr key={app._id}>
                 <td>{app.name}</td>
@@ -319,178 +337,324 @@ function LeaveApplicationsByDate() {
     };
 
     return (
-
-
         <div className="container-fluid p-0">
-
-             {/* FOR LOGO */}
-                <div className="row1 mb-0 " >
-            
-                  <div className="col-sm-12 p-0 " style={{ marginRight: '0PX', padding: '0px' }}>
-                     <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
-                          <div className="col-sm-8 ">
+            {/* Header */}
+            <div className="row1 mb-0">
+                <div className="col-sm-12 p-0" style={{ marginRight: '0PX', padding: '0px' }}>
+                    <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
+                        <div className="col-sm-8">
                             <div className="h6">
-                              <div className="contact-info d-flex align-items-center "> {/* Flexbox for contact info */}
-                                <img src={Icon1} className="icon" alt="Web-site link" />
-                                  <span className="email">info@smartLeave.com</span>
-                              </div>
+                                <div className="contact-info d-flex align-items-center">
+                                    <img src={Icon1} className="icon" alt="Web-site link" />
+                                    <span className="email">info@smartLeave.com</span>
+                                </div>
                             </div>
-                          </div>
-            
-                      <div className="col-sm-3">
-                         <div className="button-container ml-auto"> {/* Pushes buttons to the right */}
-                                <Button onClick={()=>navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
+                        </div>
+                        <div className="col-sm-3">
+                            <div className="button-container ml-auto">
+                                <Button onClick={() => navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
                                 <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
-                                                                    
+                            </div>
                         </div>
-                      </div>
-                  
-                      <div className="col-sm-1" >
-                        <div className="icon-container"> {/* Wrapper for Icon2 */}
-                          <img src={Icon2} className="icon2" alt="Web-site link" />
+                        <div className="col-sm-1">
+                            <div className="icon-container">
+                                <img src={Icon2} className="icon2" alt="Web-site link" />
+                            </div>
                         </div>
-                      </div>
-            
                     </div>
-                  </div>
                 </div>
-            
-            
-            {/* .............Nav Bar............... */}
-                <Admin3NavBar/>     
-        
-                        {/* Log out message............... */}
-                        {logoutMessage && (
-                    <div className="alert alert-success" role="alert">
-                        {logoutMessage}
+            </div>
+
+            {/* Nav Bar */}
+            <Admin3NavBar />
+
+            {/* Log out message */}
+            {logoutMessage && (
+                <div className="alert alert-success" role="alert">
+                    {logoutMessage}
+                </div>
+            )}
+
+            <div className="container mt-5">
+                <h2 className="mb-4">View Leave Status by Date</h2>
+                <Form.Group controlId="date" className="mb-3">
+                    <Form.Label>Select Date:</Form.Label>
+                    <Form.Control
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                    />
+                    <small className="text-muted">
+                        Current date: {formatDate(date)} (Sri Lanka Time)
+                    </small>
+                </Form.Group>
+
+                <div className="row mb-3">
+                    <div className="col-md-4">
+                        <Form.Group controlId="leaveStatus">
+                            <Form.Label>Status:</Form.Label>
+                            <Form.Control
+                                as="select"
+                                value={leaveStatus}
+                                onChange={(e) => setLeaveStatus(e.target.value)}
+                            >
+                                <option>All</option>
+                                <option>Approved</option>
+                                <option>Rejected</option>
+                            </Form.Control>
+                        </Form.Group>
                     </div>
-                    )}
-                    
-        <div className="container mt-5">
-
-             
-
-
-            
-            <h2 className="mb-4">View Leave Status by Date</h2>
-            <Form.Group controlId="date">
-                <Form.Label>Select Date:</Form.Label>
-                <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </Form.Group>
-            <Form.Group controlId="leaveStatus" className="mt-3">
-                <Form.Label>Status:</Form.Label>
-                <Form.Control as="select" value={leaveStatus} onChange={(e) => setLeaveStatus(e.target.value)}>
-                    <option>All</option>
-                    <option>Approved</option>
-                    <option>Rejected</option>
-                </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="searchQuery" className="mt-3">
-                <Form.Label>Search:</Form.Label>
-                <Form.Control
-                    type="text"
-                    placeholder="Search by name or designation"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </Form.Group>
-            <Button 
-  className="mt-3" 
-  variant="primary" 
-  onClick={fetchApplicationsByDate} 
-  disabled={isLoading}
-  style={{ 
-    backgroundColor: "#022B23", 
-    opacity: "0.9", 
-    borderColor: "#022B23", // Match border color
-    color: "white", // Ensure text is visible
-    padding: "10px 20px", 
-    borderRadius: "8px",
-    fontSize: "16px",
-    cursor: "pointer",
-    backdropFilter: "blur(10px)", // Apply blur effect
-    WebkitBackdropFilter: "blur(10px)" // Safari support
-  }}
->
-  {isLoading ? <Spinner animation="border" size="sm" /> : "Fetch Applications"}
-</Button>
-
-
-            {/* Desktop View */}
-            <div className="d-none d-md-block">
-                <Table striped bordered hover responsive className="mt-4">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Designation</th>
-                            <th>Progress</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredApplications.map(app => (
-                            <ApplicationRow
-                                key={app._id}
-                                app={app}
-                                actionStatus={actionStatus}
-                                handleTakeAction={handleTakeAction}
+                    <div className="col-md-8">
+                        <Form.Group controlId="searchQuery">
+                            <Form.Label>Search:</Form.Label>
+                            <Form.Control
+                                type="text"
+                                placeholder="Search by name or designation"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                             />
-                        ))}
-                    </tbody>
-                </Table>
+                        </Form.Group>
+                    </div>
+                </div>
+
+                {isLoading ? (
+                    <div className="text-center">
+                        <Spinner animation="border" role="status">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop View */}
+                        <div className="d-none d-md-block">
+                            <Table striped bordered hover responsive className="mt-4">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Designation</th>
+                                        <th>Progress</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredApplications.map(app => (
+                                        <ApplicationRow
+                                            key={app._id}
+                                            app={app}
+                                            actionStatus={actionStatus}
+                                            handleTakeAction={handleTakeAction}
+                                        />
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile View */}
+                        <div className="d-block d-md-none">
+                            {filteredApplications.map(app => (
+                                <Card key={app._id} className="mb-3">
+                                    <Card.Body>
+                                        <Card.Title>{app.name}</Card.Title>
+                                        <Card.Text>{app.designation}</Card.Text>
+                                        <ProgressBar progress={(actionStatus[app._id]?.completedActions || 0) * 33.33} />
+                                        <div className="mt-2">
+                                            <StatusBadge status={actionStatus[app._id]?.isCompleted1 ? 'Completed' : 'Pending'} /> Action 1
+                                            <br />
+                                            <StatusBadge status={actionStatus[app._id]?.isCompleted2 ? 'Completed' : 'Pending'} /> Action 2
+                                            <br />
+                                            <StatusBadge status={actionStatus[app._id]?.isCompleted3 ? 'Completed' : 'Pending'} /> Action 3
+                                        </div>
+                                        <div className="mt-2 d-flex flex-wrap">
+                                            <Button
+                                                variant="success"
+                                                className="me-2 mb-2"
+                                                onClick={() => handleTakeAction(app, 1)}
+                                                disabled={actionStatus[app._id]?.isCompleted1}
+                                            >
+                                                Action 1
+                                            </Button>
+                                            <Button
+                                                variant="warning"
+                                                className="me-2 mb-2"
+                                                onClick={() => handleTakeAction(app, 2)}
+                                                disabled={actionStatus[app._id]?.isCompleted2}
+                                            >
+                                                Action 2
+                                            </Button>
+                                            <Button
+                                                variant="danger"
+                                                className="me-2 mb-2"
+                                                onClick={() => handleTakeAction(app, 3)}
+                                                disabled={actionStatus[app._id]?.isCompleted3}
+                                            >
+                                                Action 3
+                                            </Button>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            ))}
+                        </div>
+                    </>
+                )}
             </div>
 
-            {/* Mobile View */}
-            <div className="d-block d-md-none">
-                {filteredApplications.map(app => (
-                    <Card key={app._id} className="mb-3">
-                        <Card.Body>
-                            <Card.Title>{app.name}</Card.Title>
-                            <Card.Text>{app.designation}</Card.Text>
-                            <ProgressBar progress={(actionStatus[app._id]?.completedActions || 0) * 33.33} />
-                            <div className="mt-2">
-                                <StatusBadge status={actionStatus[app._id]?.isCompleted1 ? 'Completed' : 'Pending'} /> Action 1
-                                <br />
-                                <StatusBadge status={actionStatus[app._id]?.isCompleted2 ? 'Completed' : 'Pending'} /> Action 2
-                                <br />
-                                <StatusBadge status={actionStatus[app._id]?.isCompleted3 ? 'Completed' : 'Pending'} /> Action 3
-                            </div>
-                            <div className="mt-2">
-                                <Button
-                                    variant="success"
-                                    className="me-2"
-                                    onClick={() => handleTakeAction(app, 1)}
-                                    disabled={actionStatus[app._id]?.isCompleted1}
-                                >
-                                    Action 1
-                                </Button>
-                                <Button
-                                    variant="warning"
-                                    className="me-2"
-                                    onClick={() => handleTakeAction(app, 2)}
-                                    disabled={actionStatus[app._id]?.isCompleted2}
-                                >
-                                    Action 2
-                                </Button>
-                                <Button
-                                    variant="danger"
-                                    className="me-2"
-                                    onClick={() => handleTakeAction(app, 3)}
-                                    disabled={actionStatus[app._id]?.isCompleted3}
-                                >
-                                    Action 3
-                                </Button>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                ))}
-            </div>
-        </div>
-        {/*.......................................................For Footer................................................ */}
-        
-         <Footer/>
-        
+            {/* Footer */}
+            <Footer />
+
+            {/* Action Modals */}
+            {/* Modal for Action 1 */}
+            <Modal show={showActionModal1} onHide={() => setShowActionModal1(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Action 1 - Supervisor Recommendation</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="recommendation" className="mb-3">
+                            <Form.Label>Recommendation</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                value={recommendation}
+                                onChange={(e) => setRecommendation(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="supervisingOfficerName" className="mb-3">
+                            <Form.Label>Supervising Officer Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={supervisingOfficerName}
+                                onChange={(e) => setSupervisingOfficerName(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="role" className="mb-3">
+                            <Form.Label>Your Role</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={role}
+                                onChange={(e) => setRole(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="signature1" className="mb-3">
+                            <Form.Label>Signature</Form.Label>
+                            <Form.Control
+                                type="file"
+                                onChange={(e) => setSignature1(e.target.files[0])}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowActionModal1(false)}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={handleSubmit1}>
+                        Submit
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal for Action 2 */}
+            <Modal show={showActionModal2} onHide={() => setShowActionModal2(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Action 2 - Department Head Approval</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="allowedByHead" className="mb-3">
+                            <Form.Label>Approval Status</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                value={allowedByHead}
+                                onChange={(e) => setallowedByHead(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="headOfDepartmentName" className="mb-3">
+                            <Form.Label>Head of Department Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={headOfDepartmentName}
+                                onChange={(e) => setheadOfDepartmentName(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="role" className="mb-3">
+                            <Form.Label>Your Role</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={role}
+                                onChange={(e) => setRole(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="signature2" className="mb-3">
+                            <Form.Label>Signature</Form.Label>
+                            <Form.Control
+                                type="file"
+                                onChange={(e) => setSignature2(e.target.files[0])}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowActionModal2(false)}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={handleSubmit2}>
+                        Submit
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal for Action 3 */}
+            <Modal show={showActionModal3} onHide={() => setShowActionModal3(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Action 3 - Final Approval</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group controlId="finalApproval" className="mb-3">
+                            <Form.Label>Final Approval Status</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                value={finalApproval}
+                                onChange={(e) => setfinalApproval(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="leaveClerkName" className="mb-3">
+                            <Form.Label>Leave Clerk Name</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={leaveClerkName}
+                                onChange={(e) => setleaveClerkName(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="role" className="mb-3">
+                            <Form.Label>Your Role</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={role}
+                                onChange={(e) => setRole(e.target.value)}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="signature3" className="mb-3">
+                            <Form.Label>Signature</Form.Label>
+                            <Form.Control
+                                type="file"
+                                onChange={(e) => setSignature3(e.target.files[0])}
+                            />
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowActionModal3(false)}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={handleSubmit3}>
+                        Submit
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }

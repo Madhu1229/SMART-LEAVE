@@ -143,6 +143,7 @@
 //   console.log(`Server is up and running on port number: ${PORT}`);
 // });
 // import { config } from "dotenv";
+
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
@@ -156,6 +157,7 @@ import session from "express-session";
 import { routesInit } from "./routes/google_auth_index.js"; 
 import MongoStore from "connect-mongo";
 import dotenv from "dotenv";
+// import statusRoutes from './routes/statusRoutes.js';
 dotenv.config();
 
 
@@ -189,6 +191,12 @@ app.use('/uploads_LeaveApplicant', express.static(path.join(__dirname, 'uploads_
 app.use('/uploads_TakeActions/uploads_TakeActions1', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions1')));
 app.use('/uploads_TakeActions/uploads_TakeActions2', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions2')));
 app.use('/uploads_TakeActions/uploads_TakeActions3', express.static(path.join(__dirname, 'uploads_TakeActions/uploads_TakeActions3')));
+
+
+// app.use('/api/status', statusRoutes);
+// app.use('/api/actions1', Take_Actions1Routes);
+// app.use('/api/actions2', Take_Actions2Routes);
+// app.use('/api/actions3', Take_Actions3Routes);
 
 app.use(
   session({

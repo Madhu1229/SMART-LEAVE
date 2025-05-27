@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spinner, Alert, Button, Card, Row, Col, Image } from 'react-bootstrap';
 import { format } from 'date-fns';
-
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -23,7 +22,6 @@ function LeavePDFViewer() {
         const response = await axios.get(
           `http://localhost:8093/Member_LeaveApplicant/get/${id}`
         );
-
         if (response.data.success && response.data.data) {
           setApplication(response.data.data);
         } else {
@@ -39,20 +37,16 @@ function LeavePDFViewer() {
     const fetchActions = async () => {
       try {
         const [res1, res2, res3] = await Promise.all([
-          axios.get(`http://localhost:8093/Take_Actions1/get/${id}`),
-          axios.get(`http://localhost:8093/Take_Actions2/get/${id}`),
-          axios.get(`http://localhost:8093/Take_Actions3/get/${id}`)
+          axios.get(`http://localhost:8093/Take_Actions1/get/6808e5cedf21f97970724fc1`),
+          axios.get(`http://localhost:8093/Take_Actions2/get/6808e62cdf21f97970724fe6`),
+          axios.get(`http://localhost:8093/Take_Actions3/get/6808e664df21f97970724ffb`)
         ]);
 
         setAction1Data(res1.data.success ? res1.data.data : null);
         setAction2Data(res2.data.success ? res2.data.data : null);
         setAction3Data(res3.data.success ? res3.data.data : null);
-
       } catch (err) {
         console.error("Error fetching approval data:", err);
-        setAction1Data(null);
-        setAction2Data(null);
-        setAction3Data(null);
       }
     };
 
@@ -67,10 +61,7 @@ function LeavePDFViewer() {
 
   const downloadPDF = () => {
     const input = document.getElementById('pdf-content');
-    html2canvas(input, {
-      scale: 2,
-      useCORS: true
-    }).then((canvas) => {
+    html2canvas(input, { scale: 2, useCORS: true }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210;
@@ -82,7 +73,7 @@ function LeavePDFViewer() {
 
   if (loading) {
     return (
-      <div className="text-center my-5">
+      <div style={{ textAlign: 'center', marginTop: '4rem' }}>
         <Spinner animation="border" />
         <p>Loading application details...</p>
       </div>
@@ -100,27 +91,26 @@ function LeavePDFViewer() {
   }
 
   return (
-    <div className="container my-4">
-      <div className="d-flex justify-content-end mb-3">
-        <Button variant="success" onClick={downloadPDF}>
-          Download PDF
-        </Button>
+    <div style={{ padding: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+        <Button variant="success" onClick={downloadPDF}>Download PDF</Button>
       </div>
 
-      <Card id="pdf-content" className="shadow">
-        <Card.Header className="bg-primary text-white">
-          <h2 className="mb-0">Leave Application Form</h2>
+      <Card id="pdf-content" style={{ boxShadow: '0 4px 8px rgba(0,0,0,0.1)', padding: '2rem', border: '1px solid #ccc' }}>
+        <Card.Header style={{ backgroundColor: '#053e34', color: 'white', textAlign: 'center' }}>
+          <h2>Leave Application Form</h2>
         </Card.Header>
         <Card.Body>
-          <div className="text-center mb-4">
-            <h3 className="mb-1">OFFICIAL LEAVE APPLICATION</h3>
-            <p className="h5 text-muted">Ministry of {application.ministry}</p>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <h3>OFFICIAL LEAVE APPLICATION</h3>
+            <p style={{ fontSize: '1.25rem', color: 'gray' }}>Ministry of {application.ministry}</p>
             <hr />
           </div>
 
           <h4>Applicant Details</h4>
           <Row>
             <Col md={6}>
+              <p><strong>Leave Apply ID:</strong> {application._id}</p>
               <p><strong>Name:</strong> {application.name}</p>
               <p><strong>Designation:</strong> {application.designation}</p>
               <p><strong>Sub Designation:</strong> {application.subDesignation}</p>
@@ -150,7 +140,7 @@ function LeavePDFViewer() {
 
           <h4 className="mt-5">Signatures</h4>
           <Row className="mt-3">
-            <Col md={4} className="text-center">
+            <Col md={4} style={{ textAlign: 'center' }}>
               <p><strong>Applicant</strong></p>
               <Image
                 src={`http://localhost:8093/uploads_LeaveApplicant/${application.applicantSignature}`}
@@ -160,7 +150,7 @@ function LeavePDFViewer() {
               <p>{application.name}</p>
             </Col>
 
-            <Col md={4} className="text-center">
+            <Col md={4} style={{ textAlign: 'center' }}>
               <p><strong>Acting Officer</strong></p>
               <Image
                 src={`http://localhost:8093/uploads_LeaveApplicant/${application.officerActingSignature}`}
@@ -171,69 +161,36 @@ function LeavePDFViewer() {
             </Col>
           </Row>
 
-          {/* Approval Signatures */}
           <h4 className="mt-5">Approval Signatures</h4>
           <Row className="mt-3">
-            {action1Data && (
-              <Col md={4} className="text-center border p-3">
-                <p><strong>Supervising Officer</strong></p>
-                <Image
-                  src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions1/${action1Data.signature1}`}
-                  alt="Supervising Officer Signature"
-                  style={{ maxHeight: '80px' }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-signature.png';
-                  }}
-                />
-                <p>{action1Data.supervisingOfficerName}</p>
-                <p>Status: {action1Data.recommendation}</p>
-                <p>{formatDate(action1Data.date)}</p>
-              </Col>
-            )}
-
-            {action2Data && (
-              <Col md={4} className="text-center border p-3">
-                <p><strong>Head of Department</strong></p>
-                <Image
-                  src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions2/${action2Data.signature2}`}
-                  alt="Head of Department Signature"
-                  style={{ maxHeight: '80px' }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-signature.png';
-                  }}
-                />
-                <p>{action2Data.headOfDepartmentName}</p>
-                <p>Status: {action2Data.allowedByHead}</p>
-                <p>{formatDate(action2Data.date)}</p>
-              </Col>
-            )}
-
-            {action3Data && (
-              <Col md={4} className="text-center border p-3">
-                <p><strong>Leave Clerk</strong></p>
-                <Image
-                  src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions3/${action3Data.signature3}`}
-                  alt="Leave Clerk Signature"
-                  style={{ maxHeight: '80px' }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-signature.png';
-                  }}
-                />
-                <p>{action3Data.leaveClerkName}</p>
-                <p>Status: {action3Data.finalApproval}</p>
-                <p>{formatDate(action3Data.date)}</p>
-              </Col>
-            )}
+            {[action1Data, action2Data, action3Data].map((action, index) => (
+              action && (
+                <Col key={index} md={4} style={{ textAlign: 'center', border: '1px solid #ccc', padding: '1rem' }}>
+                  <p><strong>{['Supervising Officer', 'Head of Department', 'Leave Clerk'][index]}</strong></p>
+                  <Image
+                    src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions${index + 1}/${action[`signature${index + 1}`]}`}
+                    alt={`${['Supervising Officer', 'Head of Department', 'Leave Clerk'][index]} Signature`}
+                    style={{ maxHeight: '80px' }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = '/default-signature.png';
+                    }}
+                  />
+                  <p>{action[[
+                    'supervisingOfficerName',
+                    'headOfDepartmentName',
+                    'leaveClerkName'
+                  ][index]]}</p>
+                  <p>Status: {action[[
+                    'recommendation',
+                    'allowedByHead',
+                    'finalApproval'
+                  ][index]]}</p>
+                  <p>{formatDate(action.date)}</p>
+                </Col>
+              )
+            ))}
           </Row>
-
-          {/* Success Message */}
-          <div className="text-center mt-5">
-            <h4>Leave Application Success!!!</h4>
-            
-          </div>
         </Card.Body>
       </Card>
     </div>

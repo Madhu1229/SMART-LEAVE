@@ -121,8 +121,6 @@ router.get('/uploads_TakeActions/uploads_TakeActions1/:filename', (req, res) => 
     });
 });
 
-
-
 // In your backend routes
 router.get("/get/:id", async (req, res) => {
     try {

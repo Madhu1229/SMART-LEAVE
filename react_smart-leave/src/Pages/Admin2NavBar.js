@@ -37,8 +37,8 @@ export default function AdminNavBar() {
             
             <Nav.Link 
               as={Link} 
-              to="/DashBoard" 
-              className={`nav-link-item ${location.pathname === '/DashBoard' ? 'active' : ''}`}
+              to="/DashBoard2" 
+              className={`nav-link-item ${location.pathname === '/DashBoard2' ? 'active' : ''}`}
             >
               <span className="link-top"></span>
               <span className="link-text">Dashboard</span>
@@ -71,14 +71,14 @@ export default function AdminNavBar() {
               <span className="link-text">View Leave Applicant</span>
             </Nav.Link>
             
-            <Nav.Link 
+            {/* <Nav.Link 
               as={Link} 
               to="/Notifications" 
               className={`nav-link-item ${location.pathname === '/Notifications' ? 'active' : ''}`}
             >
               <span className="link-top"></span>
               <span className="link-text">Notices</span>
-            </Nav.Link>
+            </Nav.Link> */}
             
             <Nav.Link 
               as={Link} 

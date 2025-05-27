@@ -1,508 +1,945 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { 
-  Container, 
-  Card, 
-  Button, 
-  Spinner, 
-  Alert, 
-  ProgressBar, 
-  Row, 
-  Col, 
-  Modal,
-  Image,
-  Badge
-} from 'react-bootstrap';
-import './LeaveStatus.css';
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { Table, Button, Form, Modal, Image, Spinner } from "react-bootstrap";
+import SignatureCanvas from 'react-signature-canvas';
 import NavBar from '../Pages/NavBar';
 import Icon1 from '../Images/Icon1.png';
 import Icon2 from '../Images/Icon2.png';
 import Footer from '../Pages/Footer';
+import { useNavigate } from 'react-router-dom';
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
-function LeaveStatus() {
-  const [logoutMessage, setLogoutMessage] = useState('');
-  const navigate = useNavigate();
-  const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedApp, setSelectedApp] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+// Import your local signature images and logo
+import signature1 from '../Images/signature_6808e511df21f97970724f75_1745413582412.png'; 
+import signature2 from '../Images/signature2_6808e511df21f97970724f75_1745413675996.png';
+import signature3 from '../Images/signature3_6808e511df21f97970724f75_1745413732637.png';
+import logoImage from '../Images/newLogo.png';
 
-  // Logout function
-  function logout() {
-    localStorage.removeItem('token');
-    setLogoutMessage('You have been logged out successfully.');
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 3000);
-  }
-
-  // Fetch user's leave applications
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        console.log('Token from storage:', token); // Debug log
-        
-        if (!token) {
-          console.log('No token found, redirecting to login');
-          navigate('/LeaveStatus');
-          return;
-        }
-  
-        // Verify token is still valid
-        try {
-          console.log('Validating token...');
-          const validation = await axios.get('http://localhost:8093/auth/validate', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          console.log('Validation response:', validation.data);
-          
-          if (!validation.data.valid) {
-            console.log('Token invalid, redirecting');
-            localStorage.removeItem('token');
-            navigate('/login');
-            return;
-          }
-        } catch (validationError) {
-          console.error("Validation error:", validationError.response?.data || validationError.message);
-          localStorage.removeItem('token');
-          navigate('/login');
-          return;
-        }
-        // First get all leave applications for this user
-        const leaveResponse = await axios.get(
-          'http://localhost:8093/Member_LeaveApplicant/user-applications', 
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-        
-        // Then get all approval actions
-        const [actions1, actions2, actions3] = await Promise.all([
-          axios.get('http://localhost:8093/Take_Actions1'),
-          axios.get('http://localhost:8093/Take_Actions2'),
-          axios.get('http://localhost:8093/Take_Actions3')
-        ]);
-
-        // Combine the data
-        const enrichedApplications = leaveResponse.data.map(app => {
-          // Find matching actions for this application
-          const action1 = actions1.data.find(a => a.applicationId === app._id);
-          const action2 = actions2.data.find(a => a.applicationId === app._id);
-          const action3 = actions3.data.find(a => a.applicationId === app._id);
-
-          return {
-            ...app,
-            action1,
-            action2,
-            action3,
-            action1Completed: !!action1,
-            action2Completed: !!action2,
-            action3Completed: !!action3,
-            action1Date: action1?.date1,
-            action2Date: action2?.date2,
-            action3Date: action3?.date3
-          };
-        });
-
-        setApplications(enrichedApplications);
-      } catch (err) {
-        console.error("Error fetching applications:", err);
-        setError("Failed to load leave applications. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchApplications();
-  }, [navigate]);
-
-  // Helper function to format dates
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  // Calculate status information for an application
-  const getStatusInfo = (app) => {
-    const steps = [
-      {
-        name: "Supervisor Approval",
-        completed: app.action1Completed,
-        description: app.action1Completed ? 
-          `Approved on ${formatDate(app.action1Date)}` : 
-          "Pending supervisor review",
-        icon: "📝",
-        status: app.action1?.recommendation || "Pending"
-      },
-      {
-        name: "Department Head Approval",
-        completed: app.action2Completed,
-        description: app.action2Completed ? 
-          `Approved on ${formatDate(app.action2Date)}` : 
-          "Pending department head review",
-        icon: "👔",
-        status: app.action2?.allowedByHead || "Pending"
-      },
-      {
-        name: "HR Final Approval",
-        completed: app.action3Completed,
-        description: app.action3Completed ? 
-          `Approved on ${formatDate(app.action3Date)}` : 
-          "Pending HR final approval",
-        icon: "✅",
-        status: app.action3?.finalApproval || "Pending"
-      }
-    ];
-
-    const completedSteps = steps.filter(step => step.completed).length;
-    const percentage = Math.floor((completedSteps / steps.length) * 100);
-    const currentStep = steps.findIndex(step => !step.completed) + 1 || steps.length + 1;
-    const isComplete = completedSteps === steps.length;
-
-    return {
-      steps,
-      percentage,
-      currentStep,
-      isComplete,
-      overallStatus: isComplete ? "Approved" : 
-                    completedSteps > 0 ? "In Progress" : "Submitted"
-    };
-  };
-
-  // View application details
-  const handleViewDetails = (app) => {
-    setSelectedApp(app);
-    setShowModal(true);
-  };
-
-  // Download approved application
-  const handleDownload = async (app) => {
-    try {
-      // In a real implementation, this would generate a PDF
-      // For now, we'll just show an alert
-      alert(`Downloading leave application for ${app.name}`);
+function LeaveApplicationsByDate() {
+    const [logoutMessage, setLogoutMessage] = useState('');
+    const navigate = useNavigate();
+    const sigCanvas = useRef(null);
+    const pdfRef = useRef(null);
       
-      // This would be the actual implementation:
-      // const response = await axios.get(
-      //   `http://localhost:8093/leave-applications/${app._id}/download`,
-      //   { responseType: 'blob' }
-      // );
-      // const url = window.URL.createObjectURL(new Blob([response.data]));
-      // const link = document.createElement('a');
-      // link.href = url;
-      // link.setAttribute('download', `leave-application-${app._id}.pdf`);
-      // document.body.appendChild(link);
-      // link.click();
-    } catch (err) {
-      console.error("Error downloading application:", err);
-      alert("Failed to download application. Please try again.");
+    function logout() {
+        localStorage.removeItem('token');
+        setLogoutMessage('You have been logged out successfully.');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 3000);
     }
-  };
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <Spinner animation="border" variant="primary" />
-      </div>
-    );
-  }
+    // State for filters and data
+    const [date, setDate] = useState("");
+    const [leaveStatus, setLeaveStatus] = useState("All");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [applications, setApplications] = useState([]);
+    const [membersData, setMembersData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isMembersLoading, setIsMembersLoading] = useState(true);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [showActionModal1, setShowActionModal1] = useState(false);
+    const [selectedApplication, setSelectedApplication] = useState(null);
 
-  // Error state
-  if (error) {
-    return (
-      <Container className="my-5">
-        <Alert variant="danger">{error}</Alert>
-      </Container>
-    );
-  }
+    // State for form inputs
+    const [recommendation, setRecommendation] = useState("");
+    const [supervisingOfficerName, setSupervisingOfficerName] = useState("");
+    const [role, setRole] = useState("");
+    const [signatureData, setSignatureData] = useState(null);
 
-  return (
-    <div className="container-fluid p-0">
-      {/* Header */}
-      <div className="row1 mb-0">
-        <div className="col-sm-12 p-0">
-          <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
-            <div className="col-sm-8">
-              <div className="h6">
-                <div className="contact-info d-flex align-items-center">
-                  <img src={Icon1} className="icon" alt="Website link" />
-                  <span className="email">info@smartLeave.com</span>
-                </div>
-              </div>
-            </div>
+    // State to track success messages
+    const [actionStatus, setActionStatus] = useState(() => {
+        const savedActionStatus = localStorage.getItem("actionStatus");
+        return savedActionStatus ? JSON.parse(savedActionStatus) : {};
+    });
 
-            <div className="col-sm-3">
-              <div className="button-container ml-auto">
-                <Button 
-                  onClick={() => navigate("/Login")} 
-                  variant="btn btn-warning twinkle-button" 
-                  className="mx-2 small-button main-button"
-                >
-                  Sign In
-                </Button>
-                <Button 
-                  onClick={logout} 
-                  variant="warning" 
-                  className="mx-2 small-button main-button"
-                >
-                  Log Out
-                </Button>
-              </div>
-            </div>
+    // Set today's date on component mount
+    useEffect(() => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+        setDate(formattedDate);
+    }, []);
 
-            <div className="col-sm-1">
-              <div className="icon-container">
-                <img src={Icon2} className="icon2" alt="Website link" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    // Fetch members data on component mount
+    useEffect(() => {
+        const fetchMembersData = async () => {
+            try {
+                setIsMembersLoading(true);
+                const response = await axios.get(`http://localhost:8093/Member`);
+                setMembersData(response.data || []);
+            } catch (error) {
+                console.error("Error fetching members data:", error);
+                setMembersData([]);
+            } finally {
+                setIsMembersLoading(false);
+            }
+        };
+        fetchMembersData();
+    }, []);
 
-      <NavBar />
+    // Fetch applications when date or membersData changes
+    useEffect(() => {
+        if (date && membersData.length > 0) {
+            fetchApplicationsByDate();
+        }
+    }, [date, membersData]);
 
-      {logoutMessage && (
-        <Alert variant="success" className="mb-0">
-          {logoutMessage}
-        </Alert>
-      )}
-
-      <Container className="my-5">
-        <h2 className="text-center mb-4" style={{ color: '#053e34' }}>My Leave Applications</h2>
+    // Fetch applications by date
+    const fetchApplicationsByDate = async () => {
+        if (!membersData || membersData.length === 0) return;
         
-        {applications.length === 0 ? (
-          <Card className="text-center p-4">
-            <Card.Body>
-              <Card.Title>No Leave Applications Found</Card.Title>
-              <Card.Text>
-                You haven't submitted any leave applications yet.
-              </Card.Text>
-              <Button 
-                variant="primary" 
-                onClick={() => navigate('/apply-leave')}
-                style={{ backgroundColor: '#053e34', borderColor: '#053e34' }}
-              >
-                Apply for Leave
-              </Button>
-            </Card.Body>
-          </Card>
-        ) : (
-          <Row className="g-4">
-            {applications.map((app) => {
-              const status = getStatusInfo(app);
-              
-              return (
-                <Col key={app._id} xs={12} md={6} lg={4}>
-                  <Card className="h-100 shadow-sm">
-                    <Card.Header 
-                      style={{ 
-                        backgroundColor: status.isComplete ? '#053e34' : '#6c757d',
-                        color: 'white'
-                      }}
-                    >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <span>
-                          {formatDate(app.commenceLeaveDate)} to {formatDate(app.resumeDutiesDate)}
-                        </span>
-                        <Badge bg={status.isComplete ? "success" : "warning"}>
-                          {status.overallStatus}
-                        </Badge>
-                      </div>
-                    </Card.Header>
-                    <Card.Body>
-                      <div className="mb-3">
-                        <ProgressBar 
-                          now={status.percentage} 
-                          label={`${status.percentage}%`}
-                          variant={status.isComplete ? "success" : "primary"}
-                          striped
-                          animated={!status.isComplete}
-                        />
-                      </div>
-                      
-                      {status.steps.map((step, index) => (
-                        <div 
-                          key={index}
-                          className={`status-step ${step.completed ? 'completed' : ''} ${index + 1 > status.currentStep ? 'future' : ''}`}
-                        >
-                          <div className="step-icon">{step.icon}</div>
-                          <div className="step-content">
-                            <h5>{step.name}</h5>
-                            <p>{step.description}</p>
-                            <small className="text-muted">Status: {step.status}</small>
-                          </div>
+        setIsLoading(true);
+        try {
+            const response = await axios.get(`http://localhost:8093/Member_LeaveApplicant/getByDate`, { 
+                params: { date } 
+            });
+            const leaveApplications = response.data.applications || [];
+    
+            const matchedApplications = leaveApplications.map(app => {
+                // Find potential matches by name
+                const potentialMatches = membersData.filter(m => 
+                    m.fullName.toLowerCase().trim() === app.name.toLowerCase().trim()
+                );
+                
+                let status = "Rejected";
+                let errorMessages = [];
+                let member = null;
+            
+                // ===== 1. Check Member Match =====
+                if (potentialMatches.length > 0) {
+                    // Try to find an exact match (all fields correct)
+                    member = potentialMatches.find(m => 
+                        m.designation.toLowerCase().trim() === app.designation.toLowerCase().trim() &&
+                        m.subDesignation.toLowerCase().trim() === app.subDesignation.toLowerCase().trim() &&
+                        m.ministry.toLowerCase().trim() === app.ministry.toLowerCase().trim() &&
+                        new Date(m.joiningDate).toISOString() === new Date(app.firstAppointmentDate).toISOString()
+                    );
+            
+                    // If no exact match, list mismatched fields for closest match
+                    if (!member) {
+                        const partialMatch = potentialMatches[0]; // Take the first potential match
+                        const mismatches = [];
+                        
+                        if (partialMatch.designation.toLowerCase().trim() !== app.designation.toLowerCase().trim()) {
+                            mismatches.push(`designation (${app.designation} ≠ ${partialMatch.designation})`);
+                        }
+                        if (partialMatch.subDesignation.toLowerCase().trim() !== app.subDesignation.toLowerCase().trim()) {
+                            mismatches.push(`sub-designation (${app.subDesignation} ≠ ${partialMatch.subDesignation})`);
+                        }
+                        if (partialMatch.ministry.toLowerCase().trim() !== app.ministry.toLowerCase().trim()) {
+                            mismatches.push(`ministry (${app.ministry} ≠ ${partialMatch.ministry})`);
+                        }
+                        if (new Date(partialMatch.joiningDate).toISOString() !== new Date(app.firstAppointmentDate).toISOString()) {
+                            mismatches.push(`first appointment date (${app.firstAppointmentDate} ≠ ${partialMatch.joiningDate})`);
+                        }
+                        
+                        if (mismatches.length > 0) {
+                            errorMessages.push(`Potential match for ${partialMatch.fullName} but mismatched fields: ${mismatches.join(', ')}`);
+                        }
+                    }
+                } else {
+                    errorMessages.push("No member found with this name");
+                }
+            
+                // ===== 2. Check Leave Calculations (if a member was found, even if fields don't match) =====
+                if (potentialMatches.length > 0) {
+                    const closestMatch = potentialMatches[0]; // Use the closest match for leave validation
+                    
+                    // Check if requested leave exceeds remaining leave
+                    const totalLeaveRequested = app.leaveDaysC + app.leaveDaysV + app.leaveDaysO;
+                    if (totalLeaveRequested > closestMatch.leaveRemaining) {
+                        errorMessages.push(`Total requested leave (${totalLeaveRequested}) exceeds remaining leave (${closestMatch.leaveRemaining})`);
+                    }
+            
+                    // Check if leave taken matches records
+                    const leaveTakenSum = app.leaveTakenC + app.leaveTakenV + app.leaveTakenO;
+                    if (leaveTakenSum !== closestMatch.leaveTaken) {
+                        errorMessages.push(`Sum of leave taken (${leaveTakenSum}) doesn't match member's total leave taken (${closestMatch.leaveTaken})`);
+                    }
+                }
+            
+                // Only approve if no errors exist (perfect match + valid leave)
+                if (member && errorMessages.length === 0) {
+                    status = "Approved";
+                }
+                
+                return {
+                    ...app,
+                    status: status,
+                    errors: errorMessages.length > 0 ? errorMessages : null,
+                    memberDetails: member || null
+                };
+            });
+    
+            setApplications(matchedApplications);
+        } catch (error) {
+            console.error("Error fetching applications:", error.response ? error.response.data : error.message);
+            alert("Error fetching applications. Check the console for details.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Format date for display
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${month}/${day}/${year}`;
+    };
+
+    // Filter applications
+    const filteredApplications = applications.filter(app => {
+        const matchesStatus = leaveStatus === "All" || app.status === leaveStatus;
+        const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            app.designation.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
+    });
+
+    // Check if name and role match
+    const isNameAndRoleValid = (supervisingOfficerName, role) => {
+        if (!supervisingOfficerName || !role || !membersData || !Array.isArray(membersData)) return false;
+        return membersData.some(member => 
+            member.fullName.toLowerCase() === supervisingOfficerName.trim().toLowerCase() && 
+            member.role.toLowerCase() === role.trim().toLowerCase() 
+        );
+    };
+
+    // Handle viewing details
+    const handleViewDetails = (application) => {
+        setSelectedApplication(application);
+        setShowDetailsModal(true);
+    };
+
+    // Handle taking action
+    const handleTakeAction = (application) => {
+        setSelectedApplication(application);
+        setShowActionModal1(true);
+    };
+
+    // Clear signature
+    const clearSignature = () => {
+        sigCanvas.current.clear();
+        setSignatureData(null);
+    };
+
+    // Handle submission for Action 1
+    const handleSubmit1 = async () => {
+        if (!selectedApplication) return;
+        const applicationId = selectedApplication._id;
+    
+        if (!isNameAndRoleValid(supervisingOfficerName, role)) {
+            alert("Name and role do not match. Please use the correct details.");
+            return;
+        }
+    
+        try {
+            if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
+                alert("Please provide a signature");
+                return;
+            }
+    
+            // Get signature as data URL
+            const signatureDataUrl = sigCanvas.current.toDataURL('image/png');
+            
+            // Convert data URL to blob
+            const response = await fetch(signatureDataUrl);
+            const signatureBlob = await response.blob();
+    
+            // Generate unique filename with timestamp and application ID
+            const timestamp = new Date().getTime();
+            const signatureFilename = `signature_${applicationId}_${timestamp}.png`;
+    
+            const formData = new FormData();
+            formData.append('recommendation', recommendation);
+            formData.append('supervisingOfficerName', supervisingOfficerName);
+            formData.append('role', role);
+            formData.append('signature1', signatureBlob, signatureFilename);
+            formData.append('applicationId', applicationId);
+    
+            // First submit the action data
+            const actionResponse = await axios.post(
+                'http://localhost:8093/Take_Actions1/add', 
+                formData, 
+                {
+                    headers: { 
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+    
+            // Then send notification if needed
+            try {
+                const member = membersData.find(m => 
+                    m.fullName.toLowerCase() === selectedApplication.name.toLowerCase()
+                );
+                
+                if (member && member.email) {
+                    await axios.post('http://localhost:8093/api/send-notification', {
+                        application: selectedApplication,
+                        actionDetails: {
+                            actionNumber: 1,
+                            actionName: "Supervising Officer Recommendation",
+                            status: recommendation === "Recommended" ? "Approved" : "Rejected",
+                            processedBy: supervisingOfficerName,
+                            comments: recommendation
+                        },
+                        applicantEmail: member.email
+                    });
+                }
+            } catch (notificationError) {
+                console.warn("Notification failed, but action was recorded:", notificationError);
+            }
+    
+            const updatedStatus = {
+                ...actionStatus,
+                [applicationId]: {
+                    message1: 'Action 1 was Successfully completed',
+                    isCompleted1: true,
+                }
+            };
+    
+            setActionStatus(updatedStatus);
+            localStorage.setItem("actionStatus", JSON.stringify(updatedStatus));
+    
+            setShowActionModal1(false);
+            resetForm();
+            fetchApplicationsByDate();
+        } catch (error) {
+            console.error('Error submitting the form:', error);
+            alert(`An error occurred: ${error.response?.data?.message || error.message}`);
+        }
+    };
+
+    // Reset form
+    const resetForm = () => {
+        setRecommendation("");
+        setSupervisingOfficerName("");
+        setRole("");
+        if (sigCanvas.current) {
+            sigCanvas.current.clear();
+        }
+        setSignatureData(null);
+        setSelectedApplication(null);
+    };
+
+    // Download PDF function with logo in header
+    const downloadPDF = async () => {
+        if (!selectedApplication) return;
+        
+        setIsLoading(true);
+        try {
+            // Create a temporary div to hold the PDF content
+            const pdfContent = document.createElement('div');
+            pdfContent.style.width = '210mm';
+            pdfContent.style.padding = '20px';
+            pdfContent.style.fontFamily = 'Arial, sans-serif';
+            
+            // Add the application form content with logo in header
+            pdfContent.innerHTML = `
+                <style>
+                    .pdf-form {
+                        width: 100%;
+                        border: 1px solid #000;
+                        padding: 20px;
+                        box-sizing: border-box;
+                    }
+                    .form-header {
+                        display: flex;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #000;
+                        padding-bottom: 10px;
+                    }
+                    .logo-container {
+                        margin-right: 20px;
+                    }
+                    .logo {
+                        height: 80px;
+                        width: auto;
+                    }
+                    .header-text {
+                        flex: 1;
+                        text-align: center;
+                    }
+                    .form-title {
+                        font-size: 18px;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                    }
+                    .form-section {
+                        margin-bottom: 20px;
+                    }
+                    .section-title {
+                        font-weight: bold;
+                        margin-bottom: 10px;
+                        border-bottom: 1px solid #000;
+                        padding-bottom: 5px;
+                    }
+                    .form-row {
+                        display: flex;
+                        margin-bottom: 10px;
+                    }
+                    .form-group {
+                        flex: 1;
+                        margin-right: 10px;
+                    }
+                    .form-group:last-child {
+                        margin-right: 0;
+                    }
+                    .form-label {
+                        display: block;
+                        margin-bottom: 5px;
+                        font-weight: bold;
+                    }
+                    .form-value {
+                        border-bottom: 1px solid #000;
+                        padding-bottom: 5px;
+                        min-height: 20px;
+                    }
+                    .signature-container {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-top: 30px;
+                    }
+                    .signature-box {
+                        text-align: center;
+                        width: 30%;
+                    }
+                    .signature-image {
+                        height: 80px;
+                        margin-bottom: 5px;
+                        border-bottom: 1px solid #000;
+                    }
+                    .signature-label {
+                        font-weight: bold;
+                    }
+                    .signature-name {
+                        margin-top: 5px;
+                    }
+                </style>
+                
+                <div class="pdf-form">
+                    <div class="form-header">
+                        <div class="logo-container">
+                            <img class="logo" src="${logoImage}" alt="Organization Logo" />
                         </div>
-                      ))}
-                    </Card.Body>
-                    <Card.Footer className="bg-transparent border-top-0">
-                      <div className="d-flex justify-content-between">
-                        <Button 
-                          variant="outline-info" 
-                          size="sm"
-                          onClick={() => handleViewDetails(app)}
-                        >
-                          View Details
-                        </Button>
-                        {status.isComplete ? (
-                          <Button 
-                            variant="success" 
-                            size="sm"
-                            onClick={() => handleDownload(app)}
-                          >
-                            Download Approved
-                          </Button>
-                        ) : (
-                          <Button 
-                            variant="outline-secondary" 
-                            size="sm"
-                            disabled
-                          >
-                            Pending Approval
-                          </Button>
-                        )}
-                      </div>
-                    </Card.Footer>
-                  </Card>
-                </Col>
-              );
-            })}
-          </Row>
-        )}
-      </Container>
+                        <div class="header-text">
+                            <div class="form-title">LEAVE APPLICATION FORM</div>
+                            <div>Sri Lanka Army</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">1. APPLICANT DETAILS</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <span class="form-label">Name:</span>
+                                <div class="form-value">${selectedApplication.name}</div>
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">Designation:</span>
+                                <div class="form-value">${selectedApplication.designation}</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <span class="form-label">Sub Designation:</span>
+                                <div class="form-value">${selectedApplication.subDesignation}</div>
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">Ministry/Department:</span>
+                                <div class="form-value">${selectedApplication.ministry}</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <span class="form-label">Date of First Appointment:</span>
+                                <div class="form-value">${formatDate(selectedApplication.firstAppointmentDate)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">2. LEAVE DETAILS</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <span class="form-label">Type of Leave:</span>
+                                <div class="form-value">
+                                    ${selectedApplication.leaveDaysC > 0 ? 'Casual ' : ''}
+                                    ${selectedApplication.leaveDaysV > 0 ? 'Vacation ' : ''}
+                                    ${selectedApplication.leaveDaysO > 0 ? 'Other ' : ''}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">Number of Days:</span>
+                                <div class="form-value">
+                                    ${selectedApplication.leaveDaysC + selectedApplication.leaveDaysV + selectedApplication.leaveDaysO} days
+                                    (Casual: ${selectedApplication.leaveDaysC}, 
+                                    Vacation: ${selectedApplication.leaveDaysV}, 
+                                    Other: ${selectedApplication.leaveDaysO})
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <span class="form-label">Commencement Date:</span>
+                                <div class="form-value">${formatDate(selectedApplication.commenceLeaveDate)}</div>
+                            </div>
+                            <div class="form-group">
+                                <span class="form-label">Resumption Date:</span>
+                                <div class="form-value">${formatDate(selectedApplication.resumeDutiesDate)}</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <span class="form-label">Reason for Leave:</span>
+                                <div class="form-value">${selectedApplication.reasonForLeave}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">3. SIGNATURES</div>
+                        <div class="signature-container">
+                            <div class="signature-box">
+                                <div class="signature-label">Applicant's Signature</div>
+                                <img class="signature-image" src="http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.applicantSignature}" alt="Applicant Signature" />
+                                <div class="signature-name">${selectedApplication.name}</div>
+                                <div class="signature-date">${formatDate(selectedApplication.createdAt)}</div>
+                            </div>
+                            <div class="signature-box">
+                                <div class="signature-label">Acting Officer's Signature</div>
+                                <img class="signature-image" src="http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.officerActingSignature}" alt="Acting Officer Signature" />
+                                <div class="signature-name">${selectedApplication.officerActingName || 'N/A'}</div>
+                                <div class="signature-date">${formatDate(selectedApplication.updatedAt)}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <div class="section-title">4. APPROVALS</div>
+                        <div class="signature-container">
+                            <div class="signature-box">
+                                <div class="signature-label">Supervising Officer</div>
+                                <img class="signature-image" src="${signature1}" alt="Supervising Officer Signature" />
+                                <div class="signature-name">Malithi</div>
+                                <div class="signature-date">${formatDate(new Date())}</div>
+                                <div>Recommendation: Recommended</div>
+                            </div>
+                            <div class="signature-box">
+                                <div class="signature-label">Head of Department</div>
+                                <img class="signature-image" src="${signature2}" alt="HOD Signature" />
+                                <div class="signature-name">Naduni</div>
+                                <div class="signature-date">${formatDate(new Date())}</div>
+                                <div>Approval: Allowed</div>
+                            </div>
+                            <div class="signature-box">
+                                <div class="signature-label">HR Officer</div>
+                                <img class="signature-image" src="${signature3}" alt="HR Signature" />
+                                <div class="signature-name">Thilini</div>
+                                <div class="signature-date">${formatDate(new Date())}</div>
+                                <div>Final Approval: Approved</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Append to body temporarily
+            document.body.appendChild(pdfContent);
+            
+            // Generate PDF
+            const canvas = await html2canvas(pdfContent, {
+                scale: 2,
+                logging: true,
+                useCORS: true
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 295; // A4 height in mm
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save(`leave_application_${selectedApplication.name}_${date}.pdf`);
+            
+            // Clean up
+            document.body.removeChild(pdfContent);
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            alert("Error generating PDF. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-      {/* Application Details Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton style={{ backgroundColor: '#053e34', color: 'white' }}>
-          <Modal.Title>Leave Application Details</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedApp && (
-            <div className="application-details">
-              <Row>
-                <Col md={6}>
-                  <h5>Personal Information</h5>
-                  <p><strong>Name:</strong> {selectedApp.name}</p>
-                  <p><strong>Designation:</strong> {selectedApp.designation}</p>
-                  <p><strong>Sub Designation:</strong> {selectedApp.subDesignation}</p>
-                  <p><strong>Ministry:</strong> {selectedApp.ministry}</p>
-                  <p><strong>First Appointment:</strong> {formatDate(selectedApp.firstAppointmentDate)}</p>
-                </Col>
-                <Col md={6}>
-                  <h5>Leave Details</h5>
-                  <p><strong>Leave Period:</strong> {formatDate(selectedApp.commenceLeaveDate)} to {formatDate(selectedApp.resumeDutiesDate)}</p>
-                  <p><strong>Casual Leave:</strong> {selectedApp.leaveDaysC} days</p>
-                  <p><strong>Vacation Leave:</strong> {selectedApp.leaveDaysV} days</p>
-                  <p><strong>Other Leave:</strong> {selectedApp.leaveDaysO} days</p>
-                  <p><strong>Reason:</strong> {selectedApp.reasonForLeave}</p>
-                </Col>
-              </Row>
-              <Row className="mt-3">
-                <Col md={6}>
-                  <h5>Applicant Signature</h5>
-                  <Image
-                    src={selectedApp.applicantSignature ? 
-                      `http://localhost:8093/uploads_LeaveApplicant/${selectedApp.applicantSignature}` : 
-                      'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
-                    alt="Applicant Signature"
-                    fluid
-                    className="signature-image"
-                  />
-                </Col>
-                <Col md={6}>
-                  <h5>Acting Officer Signature</h5>
-                  <Image
-                    src={selectedApp.officerActingSignature ? 
-                      `http://localhost:8093/uploads_LeaveApplicant/${selectedApp.officerActingSignature}` : 
-                      'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
-                    alt="Officer Acting Signature"
-                    fluid
-                    className="signature-image"
-                  />
-                </Col>
-              </Row>
-              
-              {/* Approval Details */}
-              <div className="mt-4">
-                <h5>Approval Progress</h5>
-                {selectedApp.action1 && (
-                  <div className="approval-detail mb-3">
-                    <h6>Supervisor Approval</h6>
-                    <p><strong>Recommendation:</strong> {selectedApp.action1.recommendation}</p>
-                    <p><strong>Officer:</strong> {selectedApp.action1.supervisingOfficerName}</p>
-                    <p><strong>Date:</strong> {formatDate(selectedApp.action1.date1)}</p>
-                    <Image
-                      src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions1/${selectedApp.action1.signature1}`}
-                      alt="Supervisor Signature"
-                      fluid
-                      className="approval-signature"
-                    />
-                  </div>
-                )}
-                
-                {selectedApp.action2 && (
-                  <div className="approval-detail mb-3">
-                    <h6>Department Head Approval</h6>
-                    <p><strong>Decision:</strong> {selectedApp.action2.allowedByHead}</p>
-                    <p><strong>Officer:</strong> {selectedApp.action2.headOfDepartmentName}</p>
-                    <p><strong>Date:</strong> {formatDate(selectedApp.action2.date2)}</p>
-                    <Image
-                      src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions2/${selectedApp.action2.signature2}`}
-                      alt="Department Head Signature"
-                      fluid
-                      className="approval-signature"
-                    />
-                  </div>
-                )}
-                
-                {selectedApp.action3 && (
-                  <div className="approval-detail">
-                    <h6>HR Final Approval</h6>
-                    <p><strong>Decision:</strong> {selectedApp.action3.finalApproval}</p>
-                    <p><strong>Clerk:</strong> {selectedApp.action3.leaveClerkName}</p>
-                    <p><strong>Date:</strong> {formatDate(selectedApp.action3.date3)}</p>
-                    <Image
-                      src={`http://localhost:8093/uploads_TakeActions/uploads_TakeActions3/${selectedApp.action3.signature3}`}
-                      alt="HR Signature"
-                      fluid
-                      className="approval-signature"
-                    />
-                  </div>
-                )}
-              </div>
+    return (
+        <div className="leave-applications-container">
+            {/* Header */}
+            <div className="row1 mb-0">
+                <div className="col-sm-12 p-0" style={{ marginRight: '0PX', padding: '0px' }}>
+                    <div className="p-1 mb-2 bg-black text-white d-flex align-items-center justify-content-between">
+                        <div className="col-sm-8">
+                            <div className="h6">
+                                <div className="contact-info d-flex align-items-center">
+                                    <img src={Icon1} className="icon" alt="Web-site link" />
+                                    <span className="email">info@smartLeave.com</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-sm-3">
+                            <div className="button-container ml-auto">
+                                <Button onClick={()=>navigate("/Login")} variant="btn btn-warning twinkle-button" className="mx-2 small-button main-button">Sign In</Button>
+                                <Button onClick={logout} variant="warning" className="mx-2 small-button main-button">Log Out</Button>
+                            </div>
+                        </div>
+                        <div className="col-sm-1">
+                            <div className="icon-container">
+                                <img src={Icon2} className="icon2" alt="Web-site link" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button 
-            variant="secondary" 
-            onClick={() => setShowModal(false)}
-          >
-            Close
-          </Button>
-          {selectedApp && getStatusInfo(selectedApp).isComplete && (
-            <Button 
-              variant="primary"
-              style={{ backgroundColor: '#053e34', borderColor: '#053e34' }}
-              onClick={() => handleDownload(selectedApp)}
-            >
-              Download Approved Application
-            </Button>
-          )}
-        </Modal.Footer>
-      </Modal>
+            
+            <NavBar/>
+            
+            {/* Log out message */}
+            {logoutMessage && (
+                <div className="custom-green-btn" role="alert">
+                    {logoutMessage}
+                </div>
+            )}
 
-      <Footer />
-    </div>
-  );
+            <div className="container-fluid p-5">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h1 className="page-title">View Leave Applications by Date</h1>
+                    <Button 
+                        variant="success" 
+                        onClick={downloadPDF}
+                        disabled={isLoading || !selectedApplication}
+                        className="download-pdf-btn"
+                    >
+                        {isLoading ? 'Generating PDF...' : 'Download as PDF'}
+                    </Button>
+                </div>
+                
+                <div className="filters-section">
+                    <div className="filter-row">
+                        <div className="filter-group">
+                            <label>Select Date:</label>
+                            <input 
+                                type="date" 
+                                value={date} 
+                                onChange={(e) => setDate(e.target.value)}
+                                className="form-control"
+                                max={new Date().toISOString().split('T')[0]}
+                            />
+                        </div>
+                        <div className="filter-group">
+                            <label>Status:</label>
+                            <select 
+                                value={leaveStatus} 
+                                onChange={(e) => setLeaveStatus(e.target.value)}
+                                className="form-control"
+                            >
+                                <option>All</option>
+                                <option>Approved</option>
+                                <option>Rejected</option>
+                            </select>
+                        </div>
+                        <div className="filter-group">
+                            <label>Search:</label>
+                            <input
+                                type="text"
+                                placeholder="Search by name or designation"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="form-control"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="applications-table-container">
+                    {isMembersLoading || isLoading ? (
+                        <div className="loading-spinner">
+                            <Spinner animation="border" variant="primary" />
+                            <p>{isMembersLoading ? "Loading member data..." : "Loading applications..."}</p>
+                        </div>
+                    ) : filteredApplications.length > 0 ? (
+                        <>
+                            <div className="table-responsive">
+                                <Table striped bordered hover className="applications-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Designation</th>
+                                            <th>Sub Designation</th>
+                                            <th>Ministry</th>
+                                            <th>Casual Leave</th>
+                                            <th>Vacation Leave</th>
+                                            <th>Other Leave</th>
+                                            <th>First Appointment</th>
+                                            <th>Leave Start</th>
+                                            <th>Leave End</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredApplications.map(app => (
+                                            <tr key={app._id}>
+                                                <td>{app.name}</td>
+                                                <td>{app.designation}</td>
+                                                <td>{app.subDesignation}</td>
+                                                <td>{app.ministry}</td>
+                                                <td>{app.leaveDaysC}</td>
+                                                <td>{app.leaveDaysV}</td>
+                                                <td>{app.leaveDaysO}</td>
+                                                <td>{formatDate(app.firstAppointmentDate)}</td>
+                                                <td>{formatDate(app.commenceLeaveDate)}</td>
+                                                <td>{formatDate(app.resumeDutiesDate)}</td>
+                                                <td>
+                                                    <span className={`status-badge ${app.status.toLowerCase()}`}>
+                                                        {app.status}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <Button 
+                                                        variant="info" 
+                                                        size="sm" 
+                                                        onClick={() => {
+                                                            setSelectedApplication(app);
+                                                            handleViewDetails(app);
+                                                        }}
+                                                        className="action-btn"
+                                                    >
+                                                        View
+                                                    </Button>
+                                                    <Button 
+                                                        variant="primary" 
+                                                        size="sm" 
+                                                        onClick={() => {
+                                                            setSelectedApplication(app);
+                                                            handleTakeAction(app);
+                                                        }}
+                                                        className="action-btn"
+                                                        disabled={actionStatus[app._id]?.isCompleted1}
+                                                    >
+                                                        {actionStatus[app._id]?.isCompleted1 ? 'Completed' : 'Action 1'}
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="no-applications">
+                            <p>No applications found for the selected date and status.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* View Details Modal */}
+                <Modal show={showDetailsModal} onHide={() => setShowDetailsModal(false)} centered className="details-modal">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Application Details</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {selectedApplication && (
+                            <div className="application-details">
+                                <table className="details-table">
+                                    <tbody>
+                                        <tr>
+                                            <th>Name</th>
+                                            <td>{selectedApplication.name}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Designation</th>
+                                            <td>{selectedApplication.designation}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Sub Designation</th>
+                                            <td>{selectedApplication.subDesignation}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Ministry</th>
+                                            <td>{selectedApplication.ministry}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Leave Days (Casual)</th>
+                                            <td>{selectedApplication.leaveDaysC}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Leave Days (Vacation)</th>
+                                            <td>{selectedApplication.leaveDaysV}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Leave Days (Other)</th>
+                                            <td>{selectedApplication.leaveDaysO}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date of First Appointment</th>
+                                            <td>{formatDate(selectedApplication.firstAppointmentDate)}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Commence Leave Date</th>
+                                            <td>{formatDate(selectedApplication.commenceLeaveDate)}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Resume Duties Date</th>
+                                            <td>{formatDate(selectedApplication.resumeDutiesDate)}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Reason for Leave</th>
+                                            <td>{selectedApplication.reasonForLeave}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Applicant Signature</th>
+                                            <td>
+                                                <Image
+                                                    src={selectedApplication.applicantSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.applicantSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                                    alt="Applicant Signature"
+                                                    style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Signature of the Acting Officer</th>
+                                            <td>
+                                                <Image
+                                                    src={selectedApplication.officerActingSignature ? `http://localhost:8093/uploads_LeaveApplicant/${selectedApplication.officerActingSignature}` : 'http://localhost:8093/uploads_LeaveApplicant/default.jpg'}
+                                                    alt="Officer Acting Signature"
+                                                    style={{ width: '100%', height: 'auto', maxWidth: '400px', borderRadius: '10%' }}
+                                                />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Status</th>
+                                            <td>{selectedApplication.status}</td>
+                                        </tr>
+                                        {selectedApplication.errors && (
+                                            <tr>
+                                                <th>Error Details</th>
+                                                <td>
+                                                    <ul className="error-list">
+                                                        {selectedApplication.errors.map((error, index) => (
+                                                            <li key={index} className="error-item">
+                                                                {error}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => setShowDetailsModal(false)}>
+                            Close
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+                
+                {/* Action Modal 1 with Digital Signature */}
+                <Modal show={showActionModal1} onHide={() => { setShowActionModal1(false); resetForm(); }} centered size="lg" className="action-modal">
+                    <Modal.Header closeButton>
+                        <Modal.Title>Take Action 1 - Digital Signature</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form className="action-form">
+                            <Form.Group>
+                                <Form.Label>Recommendation by Supervising Officer</Form.Label>
+                                <Form.Control 
+                                    as="select" 
+                                    value={recommendation} 
+                                    onChange={(e) => setRecommendation(e.target.value)}
+                                >
+                                    <option value="">Select</option>
+                                    <option value="Recommended">Recommended</option>
+                                    <option value="Not Recommended">Not Recommended</option>
+                                </Form.Control>
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Name</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter your name"
+                                    value={supervisingOfficerName}
+                                    onChange={(e) => setSupervisingOfficerName(e.target.value)}
+                                />
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Role</Form.Label>
+                                <Form.Control 
+                                    as="select" 
+                                    value={role} 
+                                    onChange={(e) => setRole(e.target.value)}
+                                >
+                                    <option value="">Select</option>
+                                    <option value="admin1">Admin I</option>
+                                </Form.Control>
+                            </Form.Group>
+                            {supervisingOfficerName && role && (
+                                isNameAndRoleValid(supervisingOfficerName, role) ? (
+                                    <>
+                                        <div className="signature-section">
+                                            <Form.Label>Digital Signature</Form.Label>
+                                            <div className="signature-canvas-container">
+                                                <SignatureCanvas
+                                                    ref={sigCanvas}
+                                                    canvasProps={{
+                                                        className: 'signature-canvas',
+                                                        width: 500,
+                                                        height: 200
+                                                    }}
+                                                />
+                                            </div>
+                                            <Button 
+                                                variant="outline-danger" 
+                                                onClick={clearSignature}
+                                                className="clear-signature-btn"
+                                            >
+                                                Clear Signature
+                                            </Button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="validation-message error">
+                                        Your details do not match. Please use the correct name and role.
+                                    </div>
+                                )
+                            )}
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={() => { setShowActionModal1(false); resetForm(); }}>
+                            Cancel
+                        </Button>
+                        <Button variant="primary" onClick={handleSubmit1} className="submit-btn">
+                            Submit with Signature
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            </div>
+            
+            <Footer/>
+        </div>
+    );
 }
 
-export default LeaveStatus;
+export default LeaveApplicationsByDate;

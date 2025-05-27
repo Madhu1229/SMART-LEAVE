@@ -37,8 +37,8 @@ export default function AdminNavBar() {
             
             <Nav.Link 
               as={Link} 
-              to="/DashBoard" 
-              className={`nav-link-item ${location.pathname === '/DashBoard' ? 'active' : ''}`}
+              to="/DashBoard3" 
+              className={`nav-link-item ${location.pathname === '/DashBoard3' ? 'active' : ''}`}
             >
               <span className="link-top"></span>
               <span className="link-text">Dashboard</span>
@@ -80,14 +80,14 @@ export default function AdminNavBar() {
               <span className="link-text">Notices</span>
             </Nav.Link>
             
-            <Nav.Link 
+            {/* <Nav.Link 
               as={Link} 
               to="/ContactUs" 
               className={`nav-link-item ${location.pathname === '/ContactUs' ? 'active' : ''}`}
             >
               <span className="link-top"></span>
               <span className="link-text">Contact Us</span>
-            </Nav.Link>
+            </Nav.Link> */}
           </Nav>
         </Navbar.Collapse>
       </Container>

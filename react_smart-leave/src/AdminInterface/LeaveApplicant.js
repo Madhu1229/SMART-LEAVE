@@ -110,7 +110,7 @@ function LeaveApplicationsByDate() {
                     // Try to find an exact match (all fields correct)
                     member = potentialMatches.find(m => 
                         m.designation.toLowerCase().trim() === app.designation.toLowerCase().trim() &&
-                        m.subDesignation.toLowerCase().trim() === app.subDesignation.toLowerCase().trim() &&
+                        // m.subDesignation.toLowerCase().trim() === app.subDesignation.toLowerCase().trim() &&
                         m.ministry.toLowerCase().trim() === app.ministry.toLowerCase().trim() &&
                         new Date(m.joiningDate).toISOString() === new Date(app.firstAppointmentDate).toISOString()
                     );
@@ -123,9 +123,9 @@ function LeaveApplicationsByDate() {
                         if (partialMatch.designation.toLowerCase().trim() !== app.designation.toLowerCase().trim()) {
                             mismatches.push(`designation (${app.designation} ≠ ${partialMatch.designation})`);
                         }
-                        if (partialMatch.subDesignation.toLowerCase().trim() !== app.subDesignation.toLowerCase().trim()) {
-                            mismatches.push(`sub-designation (${app.subDesignation} ≠ ${partialMatch.subDesignation})`);
-                        }
+                        // if (partialMatch.subDesignation.toLowerCase().trim() !== app.subDesignation.toLowerCase().trim()) {
+                        //     mismatches.push(`sub-designation (${app.subDesignation} ≠ ${partialMatch.subDesignation})`);
+                        // }
                         if (partialMatch.ministry.toLowerCase().trim() !== app.ministry.toLowerCase().trim()) {
                             mismatches.push(`ministry (${app.ministry} ≠ ${partialMatch.ministry})`);
                         }

@@ -323,6 +323,32 @@ router.get("/auth/validate", async (req, res) => {
   // Add this route to get a single leave application by ID
 
  // Get leave application by ID
+router.get("/getbyname/:name",async(req,res)=>{
+    try {
+        const { name } = req.params;
+        console.log(name);
+        
+        const application = await Member_LeaveApplicant.find({name:name});
+        if (!application) {
+            return res.status(404).json({ 
+                success: false,
+                message: "Leave application not found",
+                error: "No application found with the provided ID"
+            });
+        }
+        res.status(200).json({ 
+            success: true,
+            data: application
+        });
+
+        
+    } catch (error) {
+        console.log(error);
+        
+    }
+})
+
+
 router.get("/get/:id", async (req, res) => {
     try {
         const { id } = req.params;

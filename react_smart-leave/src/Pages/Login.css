@@ -362,3 +362,24 @@
   -webkit-font-smoothing: antialiased; /* Smooths fonts in Webkit browsers (Chrome, Safari) */
   -moz-osx-font-smoothing: grayscale; /* Helps with font rendering on macOS Firefox */
 }
+
+/* Ensure the button container is aligned */
+.button-container {
+  position: relative;
+  z-index: 2; /* Ensure buttons appear above other content */
+}
+
+/* Position the icon container on the far right */
+.icon-container {
+  position: absolute;
+  right: 0; /* Stick the icon to the right side */
+  top: 50%;  /* Vertically center the icon */
+  transform: translateY(-50%);  /* Adjust to perfect vertical alignment */
+}
+/* Reset global margins and paddings */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Better box model */
+}
+
